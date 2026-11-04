@@ -51,8 +51,6 @@ class MainActivity : ComponentActivity() {
                             selectedTab = selectedTab,
                             onTabSelected = { tab ->
                                 selectedTab = tab
-                                // Close campsite details when switching tabs
-                                selectedCampsite = null
                             }
                         )
                     }
