@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
  * - tertiary (dark brown) = back out/negative actions: DECLINE, CANCEL RESERVATION, LEAVE WAITLIST, REMOVE
  * - error (red) = irreversible actions only: DELETE ACCOUNT
  * - secondaryContainer (beige) = neutral pills, tabs, input fields
- *
  */
 private val PichusColorScheme = lightColorScheme(
     primary = PichusGreen, // main positive buttons & actions

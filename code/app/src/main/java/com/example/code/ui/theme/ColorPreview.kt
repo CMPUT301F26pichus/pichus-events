@@ -20,7 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 /**
- * Preview of the pichus palette, fonts, buttons and colors. Just for reference.
+ * Preview of the pichus app's color palette, fonts/text styles, and buttons. Just for reference.
  */
 @Preview(showBackground = true, backgroundColor = 0xFFF4EFE3)
 @Composable

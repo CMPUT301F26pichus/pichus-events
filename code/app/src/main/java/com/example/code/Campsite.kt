@@ -10,6 +10,7 @@ import android.media.Image
  *
  * @property name the name of the campsite
  * @property location geolocation of the campsite
+ * @property locationName readable location shown on cards and details
  * @property occupancy max occupancy of the campsite
  * @property price cost per night to book the campsite
  * @property rating rating (1-5) of the campsite
@@ -19,6 +20,7 @@ import android.media.Image
  */
 class Campsite(var name: String = "",
                var location: Location? = null,
+               var locationName: String = "", // Readable location for display
                var occupancy: Int = -1,
                var price: Double = -1.0,
                var rating: Double = 0.0,
