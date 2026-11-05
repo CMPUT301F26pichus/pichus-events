@@ -35,14 +35,9 @@ import com.example.code.ui.theme.DarkBrown
 import com.example.code.ui.theme.PichusTheme
 
 /**
- * Screen for campsite owners to register a new campsite.
- * Displays rounded text fields matching the mock design:
- * 1. CAMPSITE NAME
- * 2. Location
- * 3. Description
- * 4. Max Occupancy: #
- * 5. Tags
+ * Owner register campsite screen. Owners can register new campsites (US 02.01.01).
  */
+
 @Composable
 fun RegisterCampsiteScreen(
     currentUserId: Int,
