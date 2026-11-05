@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 @Composable
 fun WelcomeScreen(
     onContinue: (Int) -> Unit, // When continue is tapped - carries entered ID
+    onPolicyClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // What user typed in input box
@@ -61,6 +63,17 @@ fun WelcomeScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("CONTINUE")
+        }
+
+        Button(
+            onClick = onPolicyClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("POLICY AND GUIDELINES")
         }
     }
 }

@@ -24,6 +24,7 @@ import com.example.code.components.AppTab
 import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
+import com.example.code.screens.PolicyScreen
 import com.example.code.screens.WelcomeScreen
 
 /**
@@ -51,6 +52,9 @@ class MainActivity : ComponentActivity() {
 
                 // True until user enters ID
                 var showWelcome by remember { mutableStateOf(true) }
+
+                // True while policy screen is open
+                var showPolicy by rememberSaveable { mutableStateOf(false) }
 
 
                 // Back button goes to previous page browse screen instead of closing the app
@@ -87,13 +91,19 @@ class MainActivity : ComponentActivity() {
                     }
 
                 ) { innerPadding ->
-                    if (showWelcome) {
+                    if (showPolicy) {
+                        PolicyScreen(
+                            onBack = { showPolicy = false }, // Back to previous
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }  else if (showWelcome) {
                         // First screen, user enters ID
                         WelcomeScreen(
                             onContinue = { id ->
                                 UserSession.currentUserId = id // Remember who user is
                                 showWelcome = false // Go into app
                             },
+                            onPolicyClick = { showPolicy = true }, // Opens policy and guidelines screen
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
