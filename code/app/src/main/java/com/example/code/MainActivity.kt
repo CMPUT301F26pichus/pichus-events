@@ -16,6 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
+import com.example.code.screens.OwnerHomeScreen
+import com.example.code.screens.RegisterCampsiteScreen
 import com.example.code.screens.AdminToolsScreen
 import com.example.code.screens.BrowseProfilesScreen
 import com.example.code.screens.ProfileScreen
@@ -48,6 +50,9 @@ class MainActivity : ComponentActivity() {
                 // See which campsite is currently opened, null means we're still on browse screen (no campsite opened yet)
                 var selectedCampsite by remember { mutableStateOf<Campsite?>(null) }
 
+                // Controls whether the campsite registration form is open
+                var isRegisteringCampsite by rememberSaveable { mutableStateOf(false) }
+
                 // Tracks which admin screen is currently open
                 var adminPage by rememberSaveable { mutableStateOf<AdminPage?>(null) }
 
@@ -56,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
 
                 // Back button goes to previous page browse screen instead of closing the app
-                BackHandler(enabled = adminPage != null || selectedCampsite != null) {
+                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite) {
                     when {
                         adminPage != null -> {
                             adminPage = when (adminPage) {
@@ -64,6 +69,10 @@ class MainActivity : ComponentActivity() {
                                 AdminPage.PROFILES, AdminPage.IMAGES -> AdminPage.MENU
                                 null -> null
                             }
+                        }
+
+                        isRegisteringCampsite -> {
+                            isRegisteringCampsite = false
                         }
 
                         selectedCampsite != null -> {
@@ -83,6 +92,8 @@ class MainActivity : ComponentActivity() {
                                 onTabSelected = { tab ->
                                     selectedTab = tab
                                     adminPage = null
+                                    isRegisteringCampsite = false
+                                    selectedCampsite = null
                                 }
                             )
                         }
@@ -99,17 +110,40 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
+                        // Look up currently logged-in user profile (or fallback to owner matching UserSession.currentUserId)
+                        val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
+                            ?: User(name = "Owner", userID = UserSession.currentUserId, role = "Campsite Owner")
+
                         // Decide which screen to display
                         when (selectedTab) {
 
                             AppTab.SEARCH -> {
 
-                                if (selectedCampsite == null) {
-                                    BrowseScreen(
-                                        campsites = campsiteDB.campsites,
-                                        onCampsiteClick = { selectedCampsite = it },
+                                if (isRegisteringCampsite) {
+                                    RegisterCampsiteScreen(
+                                        currentUserId = UserSession.currentUserId,
+                                        onCampsiteRegistered = { newCampsite ->
+                                            campsiteDB.addCampsite(newCampsite)
+                                            isRegisteringCampsite = false
+                                        },
+                                        onBack = { isRegisteringCampsite = false },
                                         modifier = Modifier.padding(innerPadding)
                                     )
+                                } else if (selectedCampsite == null) {
+                                    if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
+                                        OwnerHomeScreen(
+                                            campsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
+                                            onCampsiteClick = { selectedCampsite = it },
+                                            onRegisterClick = { isRegisteringCampsite = true },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    } else {
+                                        BrowseScreen(
+                                            campsites = campsiteDB.campsites,
+                                            onCampsiteClick = { selectedCampsite = it },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
                                 } else {
                                     val campsite = selectedCampsite!!
                                     val isOnWaitingList = waitingListDB
