@@ -8,14 +8,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -36,8 +42,12 @@ import com.example.code.Campsite
 fun CampsiteDetailsScreen(
     campsite: Campsite, // Campsite to show
     onBack: () -> Unit, // For back arrow option
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isOnWaitingList: Boolean = false,
+    onJoinLottery: () -> Boolean = {true},
+    onLeaveWaitlist: () -> Boolean = {true},
 ) {
+    var errorMessage by remember(campsite.id, isOnWaitingList) {mutableStateOf<String?>(null)}
     // Everything should be stacked top to bottom with small gaps between each line
     Column(
         modifier = modifier
@@ -61,12 +71,50 @@ fun CampsiteDetailsScreen(
 
         Spacer(Modifier.height(16.dp)) //extra space before button
 
-        // Placeholder to join lottery but doesn't do anything yet (whoever's doing waitlist hook this up)
-        Button(
-            onClick = {},
+        if (isOnWaitingList) {
+            // shows joined if entrant is alr on the waiting list
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = MaterialTheme.colorScheme.secondaryContainer
+            ) {
+                Text(
+                    text = "JOINED",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                )
+            }
+
+            Button(
+                onClick = {
+                    errorMessage = null
+                    onLeaveWaitlist()
+                },
                 modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("JOIN LOTTERY")
+            ) {
+                Text("LEAVE WAITLIST")
+            }
+        } else {
+            Button(
+                onClick = {
+                    val success = onJoinLottery()
+                    errorMessage = if (!success) {
+                        "Unable to join: waiting list is full or registration is closed."
+                    } else {
+                        null
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("JOIN LOTTERY")
+            }
+        }
+
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }

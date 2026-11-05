@@ -39,6 +39,8 @@ class MainActivity : ComponentActivity() {
                 val campsiteDB = remember { CampsiteDB() }
                 // Connect to Firestore, listens for user profile changes
                 val userDB = remember { UserDB() }
+                // Connect to Firestore, listen to waiting list changes
+                val waitingListDB = remember {WaitingListDB()}
 
                 // Remember which bottom navigation tab is selected
                 var selectedTab by rememberSaveable { mutableStateOf(AppTab.SEARCH) }
@@ -109,9 +111,26 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(innerPadding)
                                     )
                                 } else {
+                                    val campsite = selectedCampsite!!
+                                    val isOnWaitingList = waitingListDB
+                                        .getWaitingList(campsite.id)
+                                        ?.contains(UserSession.currentUserId) == true
                                     CampsiteDetailsScreen(
                                         campsite = selectedCampsite!!,
                                         onBack = { selectedCampsite = null },
+                                        isOnWaitingList = isOnWaitingList,
+                                        onJoinLottery = {
+                                            waitingListDB.joinWaitingList(
+                                                campsite.id,
+                                                UserSession.currentUserId
+                                            )
+                                        },
+                                        onLeaveWaitlist = {
+                                            waitingListDB.leaveWaitingList(
+                                                campsite.id,
+                                                UserSession.currentUserId
+                                            )
+                                        },
                                         modifier = Modifier.padding(innerPadding)
                                     )
                                 }
