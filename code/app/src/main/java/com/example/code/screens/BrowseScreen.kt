@@ -39,7 +39,8 @@ fun BrowseScreen(
     onCampsiteClick: (Campsite) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Remembers what user typed in search bar. If changes, screen redraws itself. Also survives screen rotation
+    // Remembers what user typed in search bar. If changes, screen redraws itself. Survives screen rotation (android rebuilding the screen - keeps value)
+    // Learned from Android Developers, "Save UI state in Compose", https://developer.android.com/develop/ui/compose/state-saving
     var searchText by rememberSaveable { mutableStateOf("") }
 
     // The list that gets shown (recalculated whenever searchText or campsites change)
