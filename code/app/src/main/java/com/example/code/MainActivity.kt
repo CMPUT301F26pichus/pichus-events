@@ -16,9 +16,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
+import com.example.code.screens.AdminToolsScreen
+import com.example.code.screens.BrowseProfilesScreen
+import com.example.code.screens.ProfileScreen
 import com.example.code.ui.theme.PichusTheme
 import com.example.code.components.AppTab
 import com.example.code.components.BottomNavigationBar
+import com.example.code.components.AdminPage
 /**
  * App entry point. Wraps all content in the pichus theme.
  */
@@ -28,8 +32,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PichusTheme {
-                // Connects to firestore once and keeps watching for campsite changes
+                // Connects to Firestore, keeps watching for campsite changes
                 val campsiteDB = remember { CampsiteDB() }
+                // Connect to Firestore, listens for user profile changes
+                val userDB = remember { UserDB() }
 
                 // Remember which bottom navigation tab is selected
                 var selectedTab by rememberSaveable { mutableStateOf(AppTab.SEARCH) }
@@ -37,9 +43,23 @@ class MainActivity : ComponentActivity() {
                 // See which campsite is currently opened, null means we're still on browse screen (no campsite opened yet)
                 var selectedCampsite by remember { mutableStateOf<Campsite?>(null) }
 
+                // Tracks which admin screen is currently open
+                var adminPage by rememberSaveable { mutableStateOf<AdminPage?>(null) }
+
+
+
                 // Back button goes to previous page browse screen instead of closing the app
-                BackHandler(enabled = selectedCampsite != null) {
-                    selectedCampsite = null
+                BackHandler(enabled = adminPage != null || selectedCampsite != null) {
+                    when {
+                        adminPage != null -> {
+                            adminPage = when (adminPage) {
+                                AdminPage.MENU -> null
+                                AdminPage.PROFILES, AdminPage.IMAGES -> AdminPage.MENU
+                                null -> null
+                            }
+                        }
+                        selectedCampsite != null -> { selectedCampsite = null }
+                    }
                 }
 
                 Scaffold(
@@ -51,6 +71,7 @@ class MainActivity : ComponentActivity() {
                             selectedTab = selectedTab,
                             onTabSelected = { tab ->
                                 selectedTab = tab
+                                adminPage = null
                             }
                         )
                     }
@@ -77,24 +98,57 @@ class MainActivity : ComponentActivity() {
                         }
 
                         AppTab.RESERVATIONS -> {
-                            PlaceholderScreen(
-                                title = "Reservations",
-                                modifier = Modifier.padding(innerPadding)
-                            )
+                            PlaceholderScreen()
                         }
 
                         AppTab.NOTIFICATIONS -> {
-                            PlaceholderScreen(
-                                title = "Notifications",
-                                modifier = Modifier.padding(innerPadding)
-                            )
+                            PlaceholderScreen()
                         }
 
                         AppTab.PROFILE -> {
-                            PlaceholderScreen(
-                                title = "Profile",
-                                modifier = Modifier.padding(innerPadding)
-                            )
+                            when (adminPage) {
+                                null -> {
+                                    ProfileScreen(
+                                        user = User(
+                                            name = "Pichu",
+                                            userID = 1001,
+                                            email = "pichu@gmail.com",
+                                            phoneNum = 7801234567,
+                                            role = "Admin"
+                                        ),
+                                        onEditProfile = {
+                                            // Implement Edit Profile later
+                                        },
+                                        onAdminTools = {
+                                            adminPage = AdminPage.MENU
+                                        },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                }
+
+                                AdminPage.MENU -> {
+                                    AdminToolsScreen(
+                                        onBrowseProfiles = { adminPage = AdminPage.PROFILES },
+                                        onBrowseImages = { adminPage = AdminPage.IMAGES },
+                                        onBack = { adminPage = null },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                }
+
+                                AdminPage.PROFILES -> {
+                                    BrowseProfilesScreen(
+                                        users = userDB.users,
+                                        onBack = {
+                                            adminPage = AdminPage.MENU
+                                        },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                }
+
+                                AdminPage.IMAGES -> {
+                                    PlaceholderScreen()
+                                }
+                            }
                         }
                     }
                 }
@@ -105,7 +159,4 @@ class MainActivity : ComponentActivity() {
 
 // Temporary placeholder until the actual screens are implemented
 @androidx.compose.runtime.Composable
-private fun PlaceholderScreen(
-    title: String,
-    modifier: Modifier = Modifier
-) { }
+private fun PlaceholderScreen() { }

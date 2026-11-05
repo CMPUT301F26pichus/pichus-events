@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.code.components.BackButton
 import com.example.code.Campsite
 
 /**
@@ -46,11 +47,10 @@ fun CampsiteDetailsScreen(
         horizontalAlignment = Alignment.CenterHorizontally // Center everything
     ) {
         // Back arrow to go back to previous browse screen
-        IconButton(onClick = onBack,
-            modifier = Modifier.align(Alignment.Start) // Keep back arrow on very left side
-        ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-        }
+        BackButton(
+            onBack = onBack,
+            modifier = Modifier.align(Alignment.Start)
+        )
 
         Text(text = campsite.name.uppercase(), style = MaterialTheme.typography.titleLarge)
         Text(text = campsite.locationName, style = MaterialTheme.typography.bodyMedium)
