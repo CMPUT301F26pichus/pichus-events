@@ -52,7 +52,7 @@ class ReservationDB {
      */
     fun viewActiveReservations(user: User): List<Reservation> {
         return if (user.role == "Entrant") {
-            _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE"  && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
+            _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE" && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
         } else {
             _reservations.filter { it.ownerID == user.userID && it.status == "ACTIVE" && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
         }
@@ -62,13 +62,13 @@ class ReservationDB {
      * Obtains a user's past reservations
      *
      * @param user used to only return a specific user's past reservations
-     * @return the list of past reservations
+     * @return the list of past reservations (that were not cancelled)
      */
     fun viewPastReservations(user: User): List<Reservation> {
         return if (user.role == "Entrant") {
-            _reservations.filter { it.customerID == user.userID && it.endDate!! < Timestamp.now() }
+            _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE" && it.endDate!! < Timestamp.now() }
         } else {
-            _reservations.filter { it.ownerID == user.userID && it.endDate!! < Timestamp.now() }
+            _reservations.filter { it.ownerID == user.userID && it.status == "ACTIVE" && it.endDate!! < Timestamp.now() }
         }
     }
 
