@@ -4,8 +4,6 @@ import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
-import kotlin.collections.emptyList
 
 
 /**
@@ -47,115 +45,45 @@ class ReservationDB {
     }
 
     /**
-     * Queries database to only return a user's upcoming reservations
+     * Obtains a user's active reservations
      *
-     * @param user used to only return a specific user's upcoming reservations
-     * @return the list of upcoming reservations, or an empty list
+     * @param user used to only return a specific user's active reservations
+     * @return the list of active reservations (current + upcoming)
      */
-    suspend fun viewUpcomingReservations(user: User): List<Reservation> {
-        if (user.role == "Entrant") {
-            return try {
-                val querySnapshot = reservationsRef
-                    .whereEqualTo("customerID", user.userID)
-                    .whereGreaterThan("startDate", Timestamp.now())
-                    .whereEqualTo("status", "ACTIVE")
-                    .get()
-                    .await()
-
-                querySnapshot?.toObjects(Reservation::class.java) ?: emptyList()  // convert query snapshot to a list of reservations
-            } catch (e: Exception) {
-                emptyList() // return an empty list if any issues occur
-            }
+    fun viewActiveReservations(user: User): List<Reservation> {
+        return if (user.role == "Entrant") {
+            _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE"  && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
+        } else {
+            _reservations.filter { it.ownerID == user.userID && it.status == "ACTIVE" && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
         }
-        else if (user.role == "Campsite Owner") {
-            return try {
-                val querySnapshot = reservationsRef
-                    .whereEqualTo("ownerID", user.userID)
-                    .whereGreaterThan("startDate", Timestamp.now())
-                    .whereEqualTo("status", "ACTIVE")
-                    .get()
-                    .await()
-
-                querySnapshot?.toObjects(Reservation::class.java) ?: emptyList() // convert query snapshot to a list of reservations
-            } catch (e: Exception) {
-                emptyList() // return an empty list if any issues occur
-            }
-        }
-        return emptyList()
     }
 
     /**
-     * Queries database to only return a user's past reservations
+     * Obtains a user's past reservations
      *
      * @param user used to only return a specific user's past reservations
-     * @return the list of past reservations, or an empty list
+     * @return the list of past reservations
      */
-    suspend fun viewPastReservations(user: User): List<Reservation> {
-        if (user.role == "Entrant") {
-            return try {
-                val querySnapshot = reservationsRef
-                    .whereEqualTo("customerID", user.userID)
-                    .whereLessThan("endDate", Timestamp.now())
-                    .whereEqualTo("status", "ACTIVE")
-                    .get()
-                    .await()
-
-                querySnapshot?.toObjects(Reservation::class.java) ?: emptyList() // convert query snapshot to a list of reservations
-            } catch (e: Exception) {
-                emptyList() // return an empty list if any issues occur
-            }
+    fun viewPastReservations(user: User): List<Reservation> {
+        return if (user.role == "Entrant") {
+            _reservations.filter { it.customerID == user.userID && it.endDate!! < Timestamp.now() }
+        } else {
+            _reservations.filter { it.ownerID == user.userID && it.endDate!! < Timestamp.now() }
         }
-        else if (user.role == "Campsite Owner") {
-            return try {
-                val querySnapshot = reservationsRef
-                    .whereEqualTo("ownerID", user.userID)
-                    .whereLessThan("endDate", Timestamp.now())
-                    .whereEqualTo("status", "ACTIVE")
-                    .get()
-                    .await()
-
-                querySnapshot?.toObjects(Reservation::class.java) ?: emptyList() // convert query snapshot to a list of reservations
-            } catch (e: Exception) {
-                emptyList() // return an empty list if any issues occur
-            }
-        }
-        return emptyList()
     }
 
     /**
-     * Queries database to only return a user's cancelled reservations
+     * Obtains a user's cancelled reservations
      *
      * @param user used to only return a specific user's cancelled reservations
-     * @return the list of cancelled reservations, or an empty list
+     * @return the list of cancelled reservations
      */
-   suspend fun viewCancelledReservations(user: User): List<Reservation> {
-        if (user.role == "Entrant") {
-            return try {
-                val querySnapshot = reservationsRef
-                    .whereEqualTo("customerID", user.userID)
-                    .whereEqualTo("status", "CANCELLED")
-                    .get()
-                    .await()
-
-                querySnapshot?.toObjects(Reservation::class.java) ?: emptyList() // convert query snapshot to a list of reservations
-            } catch (e: Exception) {
-                emptyList() // return an empty list if any issues occur
-            }
+    fun viewCancelledReservations(user: User): List<Reservation> {
+        return if (user.role == "Entrant") {
+            _reservations.filter { it.customerID == user.userID && it.status == "CANCELLED" }
+        } else {
+            _reservations.filter { it.ownerID == user.userID && it.status == "CANCELLED" }
         }
-        else if (user.role == "Campsite Owner") {
-            return try {
-                val querySnapshot = reservationsRef
-                    .whereEqualTo("ownerID", user.userID)
-                    .whereEqualTo("status", "CANCELLED")
-                    .get()
-                    .await()
-
-                querySnapshot?.toObjects(Reservation::class.java) ?: emptyList() // convert query snapshot to a list of reservations
-            } catch (e: Exception) {
-                emptyList() // return an empty list if any issues occur
-            }
-        }
-        return emptyList()
     }
 
     /**

@@ -3,7 +3,6 @@ package com.example.code
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 
 /**
  * Stores all campsites in FireBase, and allows retrieval, update and addition functionalities
@@ -43,46 +42,25 @@ class CampsiteDB {
     }
 
     /**
-     * Queries database to only return a user's campsites
+     * Obtains an owner's own campsites
      *
-     * @param owner used to only return a specific user's campsites
-     * @return the list of owned campsites, or an empty list
+     * @param owner used to only return a specific owner's own campsites
+     * @return the list of owned campsites
      */
-    suspend fun viewOwnCampsites(owner: User): List<Campsite> {
-        return try {
-            val querySnapshot = campsitesRef
-                .whereEqualTo("ownerID", owner.userID)
-                .get()
-                .await()
-
-            querySnapshot?.toObjects(Campsite::class.java) ?: emptyList() // converts query snapshot to a list of campsites
-        } catch (e: Exception) {
-            emptyList() // return an empty list if any issues occur
-        }
+    fun viewOwnCampsites(owner: User): List<Campsite> {
+        return _campsites.filter { it.ownerID == owner.userID }
     }
+
 
     /**
-     * Queries database to only campsites meeting an occupancy requirement
+     * Obtains campsites meeting an occupancy requirement
      *
-     * @param occupancy used to find relevant campsites
-     * @return the list of relevant campsites, or an empty list
+     * @param occupancy used to find applicable campsites
+     * @return the list of relevant campsites
      */
-    suspend fun filterByOccupancy(occupancy: Int): List<Campsite> {
-        return try {
-            val querySnapshot = campsitesRef
-                .whereGreaterThanOrEqualTo("occupancy", occupancy)
-                .get()
-                .await()
-
-            querySnapshot?.toObjects(Campsite::class.java) ?: emptyList() // converts query snapshot to a list of campsites
-        } catch (e: Exception) {
-            emptyList() // return an empty list if any issues occur
-        }
+    fun filterByOccupancy(occupancy: Int): List<Campsite> {
+        return _campsites.filter { it.occupancy >= occupancy }
     }
-
-    suspend fun filterByLocation() {} // implement
-
-    suspend fun filterByDates() {} // implement
 
     /**
      * Updates local _campsites list
