@@ -1,15 +1,28 @@
 package com.example.code
 
+import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 
 /**
  * Stores waiting lists in Firestore, one per campsite, keyed by campsite ID.
+ * Keeps a local copy of every list so lookups need no suspend functions.
  */
 class WaitingListDB {
     private val db = Firebase.firestore
     private val waitingListsRef = db.collection("waitingLists")
+
+    private val _waitingLists = mutableStateListOf<WaitingList>()
+
+    /**
+     * Returns local waiting lists
+     *
+     * @return list of all waiting lists
+     */
+    val waitingLists: List<WaitingList>
+        get() = _waitingLists
 
     /**
      * Saves a waiting list. Replaces the existing list if the campsite already has one.
@@ -30,43 +43,59 @@ class WaitingListDB {
     }
 
     /**
-     * Gets a campsite's waiting list.
+     * Sets the registration deadline for a campsite's waiting list (US 02.04.03).
+     * Creates the list if the campsite has none yet.
+     *
+     * @param campsiteID campsite whose deadline is set
+     * @param deadline last moment entrants can join, null removes the deadline
+     */
+    fun setRegistrationDeadline(campsiteID: String, deadline: Timestamp?) {
+        waitingListsRef.document(campsiteID).set(
+            mapOf("campsiteID" to campsiteID, "registrationDeadline" to deadline),
+            SetOptions.merge()
+        )
+    }
+
+    /**
+     * Gets a campsite's waiting list from the local copy.
      *
      * @param campsiteID campsite to look up
-     * @return the list, or null if the list is missing or the read fails
+     * @return the list, or null if the campsite has none yet
      */
-    suspend fun getWaitingList(campsiteID: String): WaitingList? {
-        return try {
-            waitingListsRef.document(campsiteID).get().await()
-                .toObject(WaitingList::class.java)
-        } catch (e: Exception) {
-            null
-        }
+    fun getWaitingList(campsiteID: String): WaitingList? {
+        return _waitingLists.find { it.campsiteID == campsiteID }
     }
 
     /**
      * Adds an entrant to a campsite's waiting list. Creates the list if needed.
+     * Checks the local copy for the answer, then saves in a transaction that checks
+     * again, so simultaneous joins still respect the capacity and deadline.
      *
      * @param campsiteID campsite to join
      * @param entrantID entrant joining
-     * @return false if the list is full, the entrant already joined, or the transaction fails
+     * @return false if registration is closed, the list is full, or the entrant already joined
      */
-    suspend fun joinWaitingList(campsiteID: String, entrantID: Int): Boolean {
-        val docRef = waitingListsRef.document(campsiteID)
-        return try {
-            // Check capacity and add the entrant together so simultaneous joins respect the limit.
-            db.runTransaction { transaction ->
-                val waitingList = transaction.get(docRef).toObject(WaitingList::class.java)
-                    ?: WaitingList(campsiteID = campsiteID)
-                val joined = waitingList.join(entrantID)
-                if (joined) {
-                    transaction.set(docRef, waitingList)
-                }
-                joined
-            }.await()
-        } catch (e: Exception) {
-            false
+    fun joinWaitingList(campsiteID: String, entrantID: Int): Boolean {
+        val local = getWaitingList(campsiteID)
+        val check = WaitingList(
+            campsiteID,
+            local?.entrantIDs?.toMutableList() ?: mutableListOf(),
+            local?.capacity,
+            local?.registrationDeadline
+        )
+        if (!check.join(entrantID)) {
+            return false
         }
+
+        val docRef = waitingListsRef.document(campsiteID)
+        db.runTransaction { transaction ->
+            val waitingList = transaction.get(docRef).toObject(WaitingList::class.java)
+                ?: WaitingList(campsiteID = campsiteID)
+            if (waitingList.join(entrantID)) {
+                transaction.set(docRef, waitingList)
+            }
+        }
+        return true
     }
 
     /**
@@ -74,40 +103,48 @@ class WaitingListDB {
      *
      * @param campsiteID campsite to leave
      * @param entrantID entrant leaving
-     * @return false if the entrant is absent or the transaction fails
+     * @return false if the entrant is not on the list
      */
-    suspend fun leaveWaitingList(campsiteID: String, entrantID: Int): Boolean {
-        val docRef = waitingListsRef.document(campsiteID)
-        return try {
-            db.runTransaction { transaction ->
-                val waitingList = transaction.get(docRef).toObject(WaitingList::class.java)
-                val left = waitingList?.leave(entrantID) ?: false
-                if (left) {
-                    transaction.set(docRef, waitingList!!)
-                }
-                left
-            }.await()
-        } catch (e: Exception) {
-            false
+    fun leaveWaitingList(campsiteID: String, entrantID: Int): Boolean {
+        if (getWaitingList(campsiteID)?.contains(entrantID) != true) {
+            return false
         }
+
+        val docRef = waitingListsRef.document(campsiteID)
+        db.runTransaction { transaction ->
+            val waitingList = transaction.get(docRef).toObject(WaitingList::class.java)
+            if (waitingList != null && waitingList.leave(entrantID)) {
+                transaction.set(docRef, waitingList)
+            }
+        }
+        return true
     }
 
     /**
-     * Finds every waiting list an entrant has joined.
+     * Finds every waiting list an entrant has joined, from the local copy.
      *
      * @param entrant user to look up
-     * @return the lists, or an empty list if the entrant has joined none or the query fails
+     * @return the lists, or an empty list if the entrant has joined none
      */
-    suspend fun viewJoinedWaitingLists(entrant: User): List<WaitingList> {
-        return try {
-            val querySnapshot = waitingListsRef
-                .whereArrayContains("entrantIDs", entrant.userID)
-                .get()
-                .await()
+    fun viewJoinedWaitingLists(entrant: User): List<WaitingList> {
+        return _waitingLists.filter { it.contains(entrant.userID) }
+    }
 
-            querySnapshot?.toObjects(WaitingList::class.java) ?: emptyList()
-        } catch (e: Exception) {
-            emptyList()
+    /**
+     * Updates local _waitingLists list
+     */
+    init {
+        waitingListsRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                return@addSnapshotListener
+            }
+            _waitingLists.clear()
+            snapshot?.documents?.forEach { document ->
+                val waitingList = document.toObject(WaitingList::class.java)
+                if (waitingList != null) {
+                    _waitingLists.add(waitingList)
+                }
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.code
 
+import com.google.firebase.Timestamp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -55,5 +56,20 @@ class WaitingListTest {
             waitingList.join(id)
         }
         assertFalse(waitingList.isFull())
+    }
+
+    // US 02.04.03: no joining after the registration deadline.
+    @Test
+    fun joinReturnsFalseAfterDeadline() {
+        val waitingList = WaitingList(campsiteID = "1_Lakeview", registrationDeadline = Timestamp(1000, 0))
+        assertFalse(waitingList.join(5, now = Timestamp(2000, 0)))
+        assertFalse(waitingList.contains(5))
+    }
+
+    @Test
+    fun joinWorksBeforeDeadline() {
+        val waitingList = WaitingList(campsiteID = "1_Lakeview", registrationDeadline = Timestamp(2000, 0))
+        assertTrue(waitingList.isRegistrationOpen(Timestamp(1000, 0)))
+        assertTrue(waitingList.join(5, now = Timestamp(1000, 0)))
     }
 }
