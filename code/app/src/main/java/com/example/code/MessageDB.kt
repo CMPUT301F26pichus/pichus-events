@@ -2,7 +2,6 @@ package com.example.code
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import kotlinx.coroutines.tasks.await
 
 /**
  * Stores all messages in FireBase, allows for retrieval and addition
@@ -32,47 +31,24 @@ class MessageDB {
         messagesRef.document().set(message)
     }
 
-    // The following function (viewMessages(user: User) is a revised version from what I (Kundan) wrote from Google, Gemini, "how to display a kotlin firestore query snapshot", 2026-11-03
-    // My original function implemented the same query, but returned the query snapshot without converting it to a list
-    // The other query functions were re-implemented using the same structure + operations
     /**
-     * Queries database to only return a user's received messages
+     * Obtains a user's received messages
      *
      * @param user used to only return messages received by a specific user
-     * @return the list of relevant messages, or an empty list
+     * @return the list of received messages
      */
-    suspend fun viewReceivedMessages(user: User): List<Message> {
-        return try {
-            val querySnapshot = messagesRef
-                .whereEqualTo("receiverID", user.userID)
-
-                .get()
-                .await()
-
-            querySnapshot?.toObjects(Message::class.java) ?: emptyList() // converts query snapshot to a list of messages
-        } catch (e: Exception) {
-            emptyList() // return an empty list if any issues occur
-        }
+    fun viewReceivedMessages(user: User): List<Message> {
+        return _messages.filter { it.receiverID == user.userID }
     }
 
     /**
-     * Queries database to only return a user's sent messages
+     * Obtains a user's sent messages
      *
      * @param user used to only return messages sent by a specific user
-     * @return the list of relevant messages, or an empty list
+     * @return the list of messages sent by the user
      */
-    suspend fun viewSentMessages(user: User): List<Message> {
-        return try {
-            val querySnapshot = messagesRef
-                .whereEqualTo("senderID", user.userID)
-
-                .get()
-                .await()
-
-            querySnapshot?.toObjects(Message::class.java) ?: emptyList() // converts query snapshot to a list of messages
-        } catch (e: Exception) {
-            emptyList() // return an empty list if any issues occur
-        }
+    fun viewSentMessages(user: User): List<Message> {
+        return _messages.filter { it.senderID == user.userID }
     }
 
     /**
