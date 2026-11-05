@@ -99,6 +99,7 @@ class MainActivity : ComponentActivity() {
                     }  else if (showWelcome) {
                         // First screen, user enters ID
                         WelcomeScreen(
+                            users = userDB.users, // Registered users to check id against
                             onContinue = { id ->
                                 UserSession.currentUserId = id // Remember who user is
                                 showWelcome = false // Go into app
