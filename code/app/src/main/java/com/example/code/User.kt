@@ -10,6 +10,7 @@ package com.example.code
  * @property email email address
  * @property phoneNum phone number
  * @property role used to display the correct views and allow the user to perform the relevant operations
+ *
  */
 class User(val name: String = "",
            val userID: Int = -1,

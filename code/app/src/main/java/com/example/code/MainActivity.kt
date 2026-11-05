@@ -26,6 +26,8 @@ import com.example.code.components.AppTab
 import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
+import com.example.code.screens.EditProfileScreen
+import com.example.code.screens.PolicyScreen
 import com.example.code.screens.WelcomeScreen
 
 /**
@@ -58,6 +60,12 @@ class MainActivity : ComponentActivity() {
 
                 // True until user enters ID
                 var showWelcome by remember { mutableStateOf(true) }
+
+                // True while policy screen is open
+                var showPolicy by rememberSaveable { mutableStateOf(false) }
+
+                // See when edit profile screen is open
+                var editingProfile by rememberSaveable { mutableStateOf(false) }
 
 
                 // Back button goes to previous page browse screen instead of closing the app
@@ -100,13 +108,23 @@ class MainActivity : ComponentActivity() {
                     }
 
                 ) { innerPadding ->
-                    if (showWelcome) {
+                    // Signed-in user (found by id entered on welcome screen) - put here so it updates after signing in
+                    val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
+                        ?:User(name = "Unknown user") // In case it's not found
+                    if (showPolicy) {
+                        PolicyScreen(
+                            onBack = { showPolicy = false }, // Back to previous
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }  else if (showWelcome) {
                         // First screen, user enters ID
                         WelcomeScreen(
+                            users = userDB.users, // Registered users to check id against
                             onContinue = { id ->
                                 UserSession.currentUserId = id // Remember who user is
                                 showWelcome = false // Go into app
                             },
+                            onPolicyClick = { showPolicy = true }, // Opens policy and guidelines screen
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
@@ -181,22 +199,31 @@ class MainActivity : ComponentActivity() {
                             AppTab.PROFILE -> {
                                 when (adminPage) {
                                     null -> {
-                                        ProfileScreen(
-                                            user = User(
-                                                name = "Pichu",
-                                                userID = 1001,
-                                                email = "pichu@gmail.com",
-                                                phoneNum = 7801234567,
-                                                role = "Admin"
-                                            ),
-                                            onEditProfile = {
-                                                // Implement Edit Profile later
-                                            },
-                                            onAdminTools = {
-                                                adminPage = AdminPage.MENU
-                                            },
-                                            modifier = Modifier.padding(innerPadding)
-                                        )
+                                        if (editingProfile) {
+                                            EditProfileScreen(
+                                                user = currentUser,
+                                                userDB = userDB,
+                                                onBack = { editingProfile = false },
+                                                onDeleted = {
+                                                    editingProfile = false
+                                                    selectedTab = AppTab.SEARCH
+                                                    UserSession.currentUserId = -1
+                                                    showWelcome = true // Deleted, go back to welcome screen
+                                                },
+                                                modifier = Modifier.padding(innerPadding)
+                                            )
+                                        } else {
+                                            ProfileScreen(
+                                                user = currentUser,
+                                                onEditProfile = {
+                                                    editingProfile = true // opens edit profile
+                                                },
+                                                onAdminTools = {
+                                                    adminPage = AdminPage.MENU
+                                                },
+                                                modifier = Modifier.padding(innerPadding)
+                                            )
+                                        }
                                     }
 
                                     AdminPage.MENU -> {

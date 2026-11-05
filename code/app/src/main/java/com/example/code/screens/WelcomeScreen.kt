@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.code.User
 
 /**
  * Welcome screen. This is the screen users see when they first start up/launch the app.
@@ -28,11 +30,16 @@ import androidx.compose.ui.text.input.KeyboardType
 
 @Composable
 fun WelcomeScreen(
+    users: List<User>, // Registered users from firestore, used to check ID
     onContinue: (Int) -> Unit, // When continue is tapped - carries entered ID
+    onPolicyClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     // What user typed in input box
     var idText by rememberSaveable { mutableStateOf("") }
+
+    // Show error if id isn't registered user
+    var showError by rememberSaveable { mutableStateOf(false) }
 
     // Center everything
     Column(
@@ -46,21 +53,42 @@ fun WelcomeScreen(
 
         OutlinedTextField(
             value = idText,
-            onValueChange = { idText = it },
+            onValueChange = {
+                idText = it
+                            showError = false }, // hide error once they start typing
             placeholder = { Text("Enter your user ID") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // pop up number keyboard
             modifier = Modifier.fillMaxWidth()
         )
 
+        if (showError) {
+            Text(text = "No registered user with that ID", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.error)
+        }
+
         Button(
             onClick = {
                 val id = idText.toIntOrNull() // Text to number, null if it isn't a number
-                if (id != null) onContinue(id) // Only continue if it's a valid number
+                if (id != null && users.any { it.userID == id }) {
+                    onContinue(id) // Only continue if it's a valid number
+                } else {
+                    showError = true
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("CONTINUE")
+        }
+
+        Button(
+            onClick = onPolicyClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("POLICY AND GUIDELINES")
         }
     }
 }
