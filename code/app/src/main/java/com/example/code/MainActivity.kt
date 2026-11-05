@@ -23,6 +23,9 @@ import com.example.code.ui.theme.PichusTheme
 import com.example.code.components.AppTab
 import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
+import com.example.code.data.UserSession
+import com.example.code.screens.WelcomeScreen
+
 /**
  * App entry point. Wraps all content in the pichus theme.
  */
@@ -46,6 +49,8 @@ class MainActivity : ComponentActivity() {
                 // Tracks which admin screen is currently open
                 var adminPage by rememberSaveable { mutableStateOf<AdminPage?>(null) }
 
+                // True until user enters ID
+                var showWelcome by remember { mutableStateOf(true) }
 
 
                 // Back button goes to previous page browse screen instead of closing the app
@@ -58,7 +63,10 @@ class MainActivity : ComponentActivity() {
                                 null -> null
                             }
                         }
-                        selectedCampsite != null -> { selectedCampsite = null }
+
+                        selectedCampsite != null -> {
+                            selectedCampsite = null
+                        }
                     }
                 }
 
@@ -67,86 +75,99 @@ class MainActivity : ComponentActivity() {
 
                     // Bottom navigation bar
                     bottomBar = {
-                        BottomNavigationBar(
-                            selectedTab = selectedTab,
-                            onTabSelected = { tab ->
-                                selectedTab = tab
-                                adminPage = null
-                            }
-                        )
+                        if (!showWelcome) {
+                            BottomNavigationBar(
+                                selectedTab = selectedTab,
+                                onTabSelected = { tab ->
+                                    selectedTab = tab
+                                    adminPage = null
+                                }
+                            )
+                        }
                     }
+
                 ) { innerPadding ->
-                    // Decide which screen to display
-                    when (selectedTab) {
+                    if (showWelcome) {
+                        // First screen, user enters ID
+                        WelcomeScreen(
+                            onContinue = { id ->
+                                UserSession.currentUserId = id // Remember who user is
+                                showWelcome = false // Go into app
+                            },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    } else {
+                        // Decide which screen to display
+                        when (selectedTab) {
 
-                        AppTab.SEARCH -> {
+                            AppTab.SEARCH -> {
 
-                            if (selectedCampsite == null) {
-                                BrowseScreen(
-                                    campsites = campsiteDB.campsites,
-                                    onCampsiteClick = { selectedCampsite = it },
-                                    modifier = Modifier.padding(innerPadding)
-                                )
+                                if (selectedCampsite == null) {
+                                    BrowseScreen(
+                                        campsites = campsiteDB.campsites,
+                                        onCampsiteClick = { selectedCampsite = it },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                } else {
+                                    CampsiteDetailsScreen(
+                                        campsite = selectedCampsite!!,
+                                        onBack = { selectedCampsite = null },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                }
                             }
-                            else {
-                                CampsiteDetailsScreen(
-                                    campsite = selectedCampsite!!,
-                                    onBack = { selectedCampsite = null },
-                                    modifier = Modifier.padding(innerPadding)
-                                )
+
+                            AppTab.RESERVATIONS -> {
+                                PlaceholderScreen()
                             }
-                        }
 
-                        AppTab.RESERVATIONS -> {
-                            PlaceholderScreen()
-                        }
+                            AppTab.NOTIFICATIONS -> {
+                                PlaceholderScreen()
+                            }
 
-                        AppTab.NOTIFICATIONS -> {
-                            PlaceholderScreen()
-                        }
+                            AppTab.PROFILE -> {
+                                when (adminPage) {
+                                    null -> {
+                                        ProfileScreen(
+                                            user = User(
+                                                name = "Pichu",
+                                                userID = 1001,
+                                                email = "pichu@gmail.com",
+                                                phoneNum = 7801234567,
+                                                role = "Admin"
+                                            ),
+                                            onEditProfile = {
+                                                // Implement Edit Profile later
+                                            },
+                                            onAdminTools = {
+                                                adminPage = AdminPage.MENU
+                                            },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
 
-                        AppTab.PROFILE -> {
-                            when (adminPage) {
-                                null -> {
-                                    ProfileScreen(
-                                        user = User(
-                                            name = "Pichu",
-                                            userID = 1001,
-                                            email = "pichu@gmail.com",
-                                            phoneNum = 7801234567,
-                                            role = "Admin"
-                                        ),
-                                        onEditProfile = {
-                                            // Implement Edit Profile later
-                                        },
-                                        onAdminTools = {
-                                            adminPage = AdminPage.MENU
-                                        },
-                                        modifier = Modifier.padding(innerPadding)
-                                    )
-                                }
+                                    AdminPage.MENU -> {
+                                        AdminToolsScreen(
+                                            onBrowseProfiles = { adminPage = AdminPage.PROFILES },
+                                            onBrowseImages = { adminPage = AdminPage.IMAGES },
+                                            onBack = { adminPage = null },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
 
-                                AdminPage.MENU -> {
-                                    AdminToolsScreen(
-                                        onBrowseProfiles = { adminPage = AdminPage.PROFILES },
-                                        onBrowseImages = { adminPage = AdminPage.IMAGES },
-                                        onBack = { adminPage = null },
-                                        modifier = Modifier.padding(innerPadding)
-                                    )
-                                }
+                                    AdminPage.PROFILES -> {
+                                        BrowseProfilesScreen(
+                                            users = userDB.users,
+                                            onBack = {
+                                                adminPage = AdminPage.MENU
+                                            },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
 
-                                AdminPage.PROFILES -> {
-                                    BrowseProfilesScreen(
-                                        users = userDB.users,
-                                        onBack = {
-                                            adminPage = AdminPage.MENU
-                                        },
-                                        modifier = Modifier.padding(innerPadding)
-                                    )
-                                }
-
-                                AdminPage.IMAGES -> {
-                                    PlaceholderScreen()
+                                    AdminPage.IMAGES -> {
+                                        PlaceholderScreen()
+                                    }
                                 }
                             }
                         }
