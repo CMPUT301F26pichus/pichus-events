@@ -52,7 +52,6 @@ class MainActivity : ComponentActivity() {
                 // True until user enters ID
                 var showWelcome by remember { mutableStateOf(true) }
 
-
                 // Back button goes to previous page browse screen instead of closing the app
                 BackHandler(enabled = adminPage != null || selectedCampsite != null) {
                     when {
@@ -94,7 +93,8 @@ class MainActivity : ComponentActivity() {
                                 UserSession.currentUserId = id // Remember who user is
                                 showWelcome = false // Go into app
                             },
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier.padding(innerPadding),
+                            users = userDB.users
                         )
                     } else {
                         // Decide which screen to display

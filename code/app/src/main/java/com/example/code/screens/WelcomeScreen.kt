@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.text.input.KeyboardType
+import com.example.code.User
 
 /**
  * Welcome screen. This is the screen users see when they first start up/launch the app.
@@ -29,7 +30,8 @@ import androidx.compose.ui.text.input.KeyboardType
 @Composable
 fun WelcomeScreen(
     onContinue: (Int) -> Unit, // When continue is tapped - carries entered ID
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    users: List<User>
 ) {
     // What user typed in input box
     var idText by rememberSaveable { mutableStateOf("") }
@@ -56,7 +58,7 @@ fun WelcomeScreen(
         Button(
             onClick = {
                 val id = idText.toIntOrNull() // Text to number, null if it isn't a number
-                if (id != null) onContinue(id) // Only continue if it's a valid number
+                if (id != null && users.any { it.userID == id }) onContinue(id) // Only continue if it's an existing userID
             },
             modifier = Modifier.fillMaxWidth()
         ) {
