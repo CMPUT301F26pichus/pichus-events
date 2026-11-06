@@ -5,7 +5,11 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 
 /**
- * Stores all users (admin, entrants, campsite owner) in FireBase, and allows retrieval, update, addition, and deletion functionalities
+ * Stores all users (admin, entrants, campsite owner) in FireBase, and allows retrieval, update,
+ * addition, and deletion functionalities
+ *
+ * In Part 4: Ensure that deletions of a user profile result in the appropriate updates/removals in
+ * reservation, waiting list and campsite dbs
  */
 class UserDB {
     private val db = Firebase.firestore

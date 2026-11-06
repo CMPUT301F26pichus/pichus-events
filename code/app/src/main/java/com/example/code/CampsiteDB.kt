@@ -6,6 +6,9 @@ import com.google.firebase.firestore.firestore
 
 /**
  * Stores all campsites in FireBase, and allows retrieval, update and addition functionalities
+ *
+ * In Part 4: Ensure that deletions/updates of campsites result in the appropriate updates/removals in
+ * reservation and waiting list dbs
  */
 class CampsiteDB {
     private val db = Firebase.firestore
