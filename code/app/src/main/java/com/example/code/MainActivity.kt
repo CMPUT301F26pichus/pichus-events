@@ -28,6 +28,7 @@ import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
 import com.example.code.screens.EditProfileScreen
 import com.example.code.screens.PolicyScreen
+import com.example.code.screens.ReservationsScreen
 import com.example.code.screens.WelcomeScreen
 
 /**
@@ -45,6 +46,8 @@ class MainActivity : ComponentActivity() {
                 val userDB = remember { UserDB() }
                 // Connect to Firestore, listen to waiting list changes
                 val waitingListDB = remember {WaitingListDB()}
+                // Connect to Firestore, listen for reservation changes
+                val reservationDB = remember {ReservationDB()}
 
                 // Remember which bottom navigation tab is selected
                 var selectedTab by rememberSaveable { mutableStateOf(AppTab.SEARCH) }
@@ -189,7 +192,16 @@ class MainActivity : ComponentActivity() {
                             }
 
                             AppTab.RESERVATIONS -> {
-                                PlaceholderScreen()
+                                ReservationsScreen(
+                                    currentUser=currentUser,
+                                    reservationDB = reservationDB,
+                                    campsiteDB = campsiteDB,
+                                    onReservationClick = { campsiteId ->
+                                        // for later (US 01.07.01 & 01.13.01)
+                                        // to open reservation details screen
+                                    },
+                                    modifier = Modifier.padding(innerPadding)
+                                )
                             }
 
                             AppTab.NOTIFICATIONS -> {
