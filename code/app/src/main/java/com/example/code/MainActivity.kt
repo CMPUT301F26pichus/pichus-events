@@ -29,7 +29,6 @@ import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
 import com.example.code.screens.EditProfileScreen
-import com.example.code.screens.OwnerCampsiteDetailsScreen
 import com.example.code.screens.PolicyScreen
 import com.example.code.screens.ReservationsScreen
 import com.example.code.screens.WelcomeScreen
@@ -124,8 +123,6 @@ class MainActivity : ComponentActivity() {
 
                 ) { innerPadding ->
                     // Signed-in user (found by id entered on welcome screen) - put here so it updates after signing in
-                    val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
-                        ?:User(name = "Unknown user") // In case it's not found
                     if (showPolicy) {
                         PolicyScreen(
                             onBack = { showPolicy = false }, // Back to previous
@@ -259,11 +256,22 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             ProfileScreen(
                                                 user = currentUser,
-                                                onEditProfile = {
-                                                    editingProfile = true // opens edit profile
-                                                },
-                                                onAdminTools = {
-                                                    adminPage = AdminPage.MENU
+                                                onEditProfile = { editingProfile = true }, // opens edit profile
+                                                onAdminTools = { adminPage = AdminPage.MENU },
+                                                onLogout = {
+                                                    // Clear the current user session
+                                                    UserSession.currentUserId = -1
+
+                                                    // Reset navigation state
+                                                    selectedTab = AppTab.SEARCH
+                                                    selectedCampsite = null
+                                                    isRegisteringCampsite = false
+                                                    adminPage = null
+                                                    editingProfile = false
+                                                    showPolicy = false
+
+                                                    // Return to the welcome screen
+                                                    showWelcome = true
                                                 },
                                                 modifier = Modifier.padding(innerPadding)
                                             )
