@@ -141,6 +141,9 @@ class MainActivity : ComponentActivity() {
                                         onBack = {
                                             adminPage = AdminPage.MENU
                                         },
+                                        onDeleteUser = { user ->
+                                            userDB.deleteUser(user)
+                                        },
                                         modifier = Modifier.padding(innerPadding)
                                     )
                                 }
