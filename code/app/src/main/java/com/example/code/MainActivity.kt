@@ -16,6 +16,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
+import com.example.code.screens.OwnerHomeScreen
+import com.example.code.screens.RegisterCampsiteScreen
 import com.example.code.screens.AdminToolsScreen
 import com.example.code.screens.BrowseProfilesScreen
 import com.example.code.screens.ProfileScreen
@@ -23,6 +25,11 @@ import com.example.code.ui.theme.PichusTheme
 import com.example.code.components.AppTab
 import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
+import com.example.code.data.UserSession
+import com.example.code.screens.EditProfileScreen
+import com.example.code.screens.PolicyScreen
+import com.example.code.screens.WelcomeScreen
+
 /**
  * App entry point. Wraps all content in the pichus theme.
  */
@@ -36,6 +43,8 @@ class MainActivity : ComponentActivity() {
                 val campsiteDB = remember { CampsiteDB() }
                 // Connect to Firestore, listens for user profile changes
                 val userDB = remember { UserDB() }
+                // Connect to Firestore, listen to waiting list changes
+                val waitingListDB = remember {WaitingListDB()}
 
                 // Remember which bottom navigation tab is selected
                 var selectedTab by rememberSaveable { mutableStateOf(AppTab.SEARCH) }
@@ -43,13 +52,24 @@ class MainActivity : ComponentActivity() {
                 // See which campsite is currently opened, null means we're still on browse screen (no campsite opened yet)
                 var selectedCampsite by remember { mutableStateOf<Campsite?>(null) }
 
+                // Controls whether the campsite registration form is open
+                var isRegisteringCampsite by rememberSaveable { mutableStateOf(false) }
+
                 // Tracks which admin screen is currently open
                 var adminPage by rememberSaveable { mutableStateOf<AdminPage?>(null) }
 
+                // True until user enters ID
+                var showWelcome by remember { mutableStateOf(true) }
+
+                // True while policy screen is open
+                var showPolicy by rememberSaveable { mutableStateOf(false) }
+
+                // See when edit profile screen is open
+                var editingProfile by rememberSaveable { mutableStateOf(false) }
 
 
                 // Back button goes to previous page browse screen instead of closing the app
-                BackHandler(enabled = adminPage != null || selectedCampsite != null) {
+                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite) {
                     when {
                         adminPage != null -> {
                             adminPage = when (adminPage) {
@@ -58,7 +78,14 @@ class MainActivity : ComponentActivity() {
                                 null -> null
                             }
                         }
-                        selectedCampsite != null -> { selectedCampsite = null }
+
+                        isRegisteringCampsite -> {
+                            isRegisteringCampsite = false
+                        }
+
+                        selectedCampsite != null -> {
+                            selectedCampsite = null
+                        }
                     }
                 }
 
@@ -67,79 +94,94 @@ class MainActivity : ComponentActivity() {
 
                     // Bottom navigation bar
                     bottomBar = {
-                        BottomNavigationBar(
-                            selectedTab = selectedTab,
-                            onTabSelected = { tab ->
-                                selectedTab = tab
-                                adminPage = null
-                            }
-                        )
+                        if (!showWelcome) {
+                            BottomNavigationBar(
+                                selectedTab = selectedTab,
+                                onTabSelected = { tab ->
+                                    selectedTab = tab
+                                    adminPage = null
+                                    isRegisteringCampsite = false
+                                    selectedCampsite = null
+                                }
+                            )
+                        }
                     }
+
                 ) { innerPadding ->
-                    // Decide which screen to display
-                    when (selectedTab) {
+                    // Signed-in user (found by id entered on welcome screen) - put here so it updates after signing in
+                    val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
+                        ?:User(name = "Unknown user") // In case it's not found
+                    if (showPolicy) {
+                        PolicyScreen(
+                            onBack = { showPolicy = false }, // Back to previous
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }  else if (showWelcome) {
+                        // First screen, user enters ID
+                        WelcomeScreen(
+                            users = userDB.users, // Registered users to check id against
+                            onContinue = { id ->
+                                UserSession.currentUserId = id // Remember who user is
+                                showWelcome = false // Go into app
+                            },
+                            onPolicyClick = { showPolicy = true }, // Opens policy and guidelines screen
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    } else {
+                        // Look up currently logged-in user profile (or fallback to owner matching UserSession.currentUserId)
+                        val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
+                            ?: User(name = "Owner", userID = UserSession.currentUserId, role = "Campsite Owner")
 
-                        AppTab.SEARCH -> {
+                        // Decide which screen to display
+                        when (selectedTab) {
 
-                            if (selectedCampsite == null) {
-                                BrowseScreen(
-                                    campsites = campsiteDB.campsites,
-                                    onCampsiteClick = { selectedCampsite = it },
-                                    modifier = Modifier.padding(innerPadding)
-                                )
-                            }
-                            else {
-                                CampsiteDetailsScreen(
-                                    campsite = selectedCampsite!!,
-                                    onBack = { selectedCampsite = null },
-                                    modifier = Modifier.padding(innerPadding)
-                                )
-                            }
-                        }
+                            AppTab.SEARCH -> {
 
-                        AppTab.RESERVATIONS -> {
-                            PlaceholderScreen()
-                        }
-
-                        AppTab.NOTIFICATIONS -> {
-                            PlaceholderScreen()
-                        }
-
-                        AppTab.PROFILE -> {
-                            when (adminPage) {
-                                null -> {
-                                    ProfileScreen(
-                                        user = User(
-                                            name = "Pichu",
-                                            userID = 1001,
-                                            email = "pichu@gmail.com",
-                                            phoneNum = 7801234567,
-                                            role = "Admin"
-                                        ),
-                                        onEditProfile = {
-                                            // Implement Edit Profile later
+                                if (isRegisteringCampsite) {
+                                    RegisterCampsiteScreen(
+                                        currentUserId = UserSession.currentUserId,
+                                        onCampsiteRegistered = { newCampsite ->
+                                            campsiteDB.addCampsite(newCampsite)
+                                            isRegisteringCampsite = false
                                         },
-                                        onAdminTools = {
-                                            adminPage = AdminPage.MENU
-                                        },
+                                        onBack = { isRegisteringCampsite = false },
                                         modifier = Modifier.padding(innerPadding)
                                     )
-                                }
-
-                                AdminPage.MENU -> {
-                                    AdminToolsScreen(
-                                        onBrowseProfiles = { adminPage = AdminPage.PROFILES },
-                                        onBrowseImages = { adminPage = AdminPage.IMAGES },
-                                        onBack = { adminPage = null },
-                                        modifier = Modifier.padding(innerPadding)
-                                    )
-                                }
-
-                                AdminPage.PROFILES -> {
-                                    BrowseProfilesScreen(
-                                        users = userDB.users,
-                                        onBack = {
-                                            adminPage = AdminPage.MENU
+                                } else if (selectedCampsite == null) {
+                                    if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
+                                        OwnerHomeScreen(
+                                            campsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
+                                            onCampsiteClick = { selectedCampsite = it },
+                                            onRegisterClick = { isRegisteringCampsite = true },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    } else {
+                                        BrowseScreen(
+                                            campsites = campsiteDB.campsites,
+                                            onCampsiteClick = { selectedCampsite = it },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
+                                } else {
+                                    val campsite = selectedCampsite!!
+                                    val isOnWaitingList = waitingListDB
+                                        .getWaitingList(campsite.id)
+                                        ?.contains(UserSession.currentUserId) == true
+                                    CampsiteDetailsScreen(
+                                        campsite = selectedCampsite!!,
+                                        onBack = { selectedCampsite = null },
+                                        isOnWaitingList = isOnWaitingList,
+                                        onJoinLottery = {
+                                            waitingListDB.joinWaitingList(
+                                                campsite.id,
+                                                UserSession.currentUserId
+                                            )
+                                        },
+                                        onLeaveWaitlist = {
+                                            waitingListDB.leaveWaitingList(
+                                                campsite.id,
+                                                UserSession.currentUserId
+                                            )
                                         },
                                         onDeleteUser = { user ->
                                             userDB.deleteUser(user)
@@ -147,9 +189,68 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(innerPadding)
                                     )
                                 }
+                            }
 
-                                AdminPage.IMAGES -> {
-                                    PlaceholderScreen()
+                            AppTab.RESERVATIONS -> {
+                                PlaceholderScreen()
+                            }
+
+                            AppTab.NOTIFICATIONS -> {
+                                PlaceholderScreen()
+                            }
+
+                            AppTab.PROFILE -> {
+                                when (adminPage) {
+                                    null -> {
+                                        if (editingProfile) {
+                                            EditProfileScreen(
+                                                user = currentUser,
+                                                userDB = userDB,
+                                                onBack = { editingProfile = false },
+                                                onDeleted = {
+                                                    editingProfile = false
+                                                    selectedTab = AppTab.SEARCH
+                                                    UserSession.currentUserId = -1
+                                                    showWelcome = true // Deleted, go back to welcome screen
+                                                },
+                                                modifier = Modifier.padding(innerPadding)
+                                            )
+                                        } else {
+                                            ProfileScreen(
+                                                user = currentUser,
+                                                onEditProfile = {
+                                                    editingProfile = true // opens edit profile
+                                                },
+                                                onAdminTools = {
+                                                    adminPage = AdminPage.MENU
+                                                },
+                                                modifier = Modifier.padding(innerPadding)
+                                            )
+                                        }
+                                    }
+
+                                    AdminPage.MENU -> {
+                                        AdminToolsScreen(
+                                            onBrowseProfiles = { adminPage = AdminPage.PROFILES },
+                                            onBrowseImages = { adminPage = AdminPage.IMAGES },
+                                            onBack = { adminPage = null },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
+
+                                    AdminPage.PROFILES -> {
+                                        BrowseProfilesScreen(
+                                            users = userDB.users,
+                                            onBack = {
+                                                adminPage = AdminPage.MENU
+                                            },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
+
+                                    AdminPage.IMAGES -> {
+                                        PlaceholderScreen()
+                                    }
                                 }
                             }
                         }
