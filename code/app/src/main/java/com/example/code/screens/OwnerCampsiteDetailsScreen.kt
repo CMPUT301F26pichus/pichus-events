@@ -38,6 +38,7 @@ import java.util.Locale
  * US 02.01.04: As a campsite owner, I want to view details of my campsite.
  * US 02.06.01: As a campsite owner, I want to view currently booked dates.
  * US 02.04.03, 02.04.07: As a campsite owner, I want to set a registration period & capacity for my waitlist.
+ * US 02.06.01: As a campsite owner, I want to view the currently booked dates for my campsite.
  */
 @Composable
 fun OwnerCampsiteDetailsScreen(
