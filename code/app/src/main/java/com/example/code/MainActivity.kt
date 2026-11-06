@@ -266,10 +266,14 @@ class MainActivity : ComponentActivity() {
                                         ReservationDetailsScreen(
                                             reservation = reservation,
                                             campsite = campsite,
+                                            userRole = currentUser.role,
                                             onBack = { selectedReservationId = null },
                                             onCancelReservation = {
                                                 reservationDB.cancelReservation(reservation)
-                                                selectedReservationId = null // Navigate back to list after cancelling
+                                                selectedReservationId = null
+                                            },
+                                            onRate = { selectedRating ->
+                                                reservationDB.rateReservation(reservation, selectedRating)
                                             },
                                             modifier = Modifier.padding(innerPadding)
                                         )

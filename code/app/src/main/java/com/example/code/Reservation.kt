@@ -21,4 +21,5 @@ class Reservation(val customerID: Int = -1,
                   val startDate: Timestamp? = null,
                   val endDate: Timestamp? = null,
                   var guestCount: Int = -1,
-                  var status: String = "ACTIVE")
+                  var status: String = "ACTIVE",
+                  var rating: Int = 0)

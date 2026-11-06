@@ -88,6 +88,14 @@ class ReservationDB {
     }
 
     /**
+     * Updates the rating for a past reservation
+     */
+    fun rateReservation(reservation: Reservation, newRating: Int) {
+        val docId = reservation.customerID.toString() + "_" + reservation.campsiteID
+        reservationsRef.document(docId).update("rating", newRating)
+    }
+
+    /**
      * Updates local _reservations list
      */
     init {
