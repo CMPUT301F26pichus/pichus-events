@@ -21,10 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.code.User
-import com.example.code.ui.theme.PichusTheme
 import com.example.code.components.ProfilePicture
 
 
@@ -36,6 +34,7 @@ fun ProfileScreen(
     user: User?,
     onEditProfile: () -> Unit,
     onAdminTools: () -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -92,6 +91,13 @@ fun ProfileScreen(
             ) {
                 Text("Admin Tools")
             }
+        }
+
+        Button(
+            onClick = onLogout,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Log Out")
         }
     }
 }
@@ -153,25 +159,6 @@ private fun ProfileInformation(
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge
-        )
-    }
-}
-
-// Preview of screen for reference
-@Preview(showBackground = true, backgroundColor = 0xFFF4EFE3)
-@Composable
-private fun ProfileScreenPreview() {
-    PichusTheme {
-        ProfileScreen(
-            user = User(
-                name = "Pichu",
-                userID = 1001,
-                email = "pichu@gmail.com",
-                phoneNum = 7801234567,
-                role = "Admin"
-            ),
-            onEditProfile = {},
-            onAdminTools = {}
         )
     }
 }
