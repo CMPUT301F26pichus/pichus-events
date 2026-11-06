@@ -237,6 +237,11 @@ class MainActivity : ComponentActivity() {
                                                     UserSession.currentUserId
                                                 )
                                             },
+                                            isAdmin = currentUser.role.equals("Admin", ignoreCase = true),
+                                            onDeleteCampsite = {
+                                                campsiteDB.deleteCampsite(campsite)
+                                                selectedCampsite = null
+                                            },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
