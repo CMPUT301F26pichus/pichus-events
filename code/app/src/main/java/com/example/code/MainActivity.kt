@@ -212,6 +212,7 @@ class MainActivity : ComponentActivity() {
                                             campsite = campsite,
                                             bookedReservations = reservationDB.reservations.filter { it.campsiteID == campsite.id && it.status == "ACTIVE" },
                                             waitingList = waitingListDB.getWaitingList(campsite.id),
+                                            users = userDB.users,
                                             onBack = { selectedCampsite = null },
                                             onUpdateClick = { isUpdatingCampsite = true },
                                             onCreateWaitlistClick = { isCreatingWaitlist = true },

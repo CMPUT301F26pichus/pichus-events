@@ -15,6 +15,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.code.Campsite
 import com.example.code.Reservation
+import com.example.code.User
 import com.example.code.WaitingList
 import com.example.code.components.BackButton
 import com.example.code.data.SampleCampsites
@@ -38,7 +40,7 @@ import java.util.Locale
  * US 02.01.04: As a campsite owner, I want to view details of my campsite.
  * US 02.06.01: As a campsite owner, I want to view currently booked dates.
  * US 02.04.03, 02.04.07: As a campsite owner, I want to set a registration period & capacity for my waitlist.
- * US 02.06.01: As a campsite owner, I want to view the currently booked dates for my campsite.
+ * US 02.09.01: As a campsite owner, I want to view a list of entrants who have joined the waitlist.
  */
 @Composable
 fun OwnerCampsiteDetailsScreen(
@@ -48,7 +50,8 @@ fun OwnerCampsiteDetailsScreen(
     modifier: Modifier = Modifier,
     bookedReservations: List<Reservation> = emptyList(),
     waitingList: WaitingList? = null,
-    onCreateWaitlistClick: () -> Unit = {}
+    users: List<User> = emptyList(),
+    onCreateWaitlistClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -176,6 +179,55 @@ fun OwnerCampsiteDetailsScreen(
             }
         }
 
+        // Entrants List Section (US 02.09.01)
+        Text(
+            text = "Entrants on Waitlist:",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(top = 8.dp, bottom = 4.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if ((waitingList == null) || (waitingList.entrantIDs.isEmpty())) {
+                    Text(
+                        text = "No entrants have joined this lottery yet.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                } else {
+                    waitingList.entrantIDs.forEach { entrantID ->
+                        val user = users.find { it.userID == entrantID }
+                        val displayName = user?.name?.ifBlank { null } ?: "Entrant #$entrantID"
+
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = displayName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Booked Dates Section (US 02.06.01)
         Text(
             text = "Booked dates:",
@@ -252,6 +304,7 @@ private fun OwnerCampsiteDetailsScreenPreview() {
             campsite = SampleCampsites.all().first(),
             bookedReservations = emptyList(),
             waitingList = null,
+            users = emptyList(),
             onBack = {},
             onUpdateClick = {},
             onCreateWaitlistClick = {}
