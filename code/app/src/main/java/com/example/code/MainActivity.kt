@@ -16,8 +16,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
+import com.example.code.screens.OwnerCampsiteDetailsScreen
 import com.example.code.screens.OwnerHomeScreen
 import com.example.code.screens.RegisterCampsiteScreen
+import com.example.code.screens.UpdateCampsiteScreen
 import com.example.code.screens.AdminToolsScreen
 import com.example.code.screens.BrowseProfilesScreen
 import com.example.code.screens.ProfileScreen
@@ -55,6 +57,9 @@ class MainActivity : ComponentActivity() {
                 // Controls whether the campsite registration form is open
                 var isRegisteringCampsite by rememberSaveable { mutableStateOf(false) }
 
+                // Controls whether the campsite update form is open
+                var isUpdatingCampsite by rememberSaveable { mutableStateOf(false) }
+
                 // Tracks which admin screen is currently open
                 var adminPage by rememberSaveable { mutableStateOf<AdminPage?>(null) }
 
@@ -69,7 +74,7 @@ class MainActivity : ComponentActivity() {
 
 
                 // Back button goes to previous page browse screen instead of closing the app
-                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite) {
+                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite || isUpdatingCampsite) {
                     when {
                         adminPage != null -> {
                             adminPage = when (adminPage) {
@@ -81,6 +86,10 @@ class MainActivity : ComponentActivity() {
 
                         isRegisteringCampsite -> {
                             isRegisteringCampsite = false
+                        }
+
+                        isUpdatingCampsite -> {
+                            isUpdatingCampsite = false
                         }
 
                         selectedCampsite != null -> {
@@ -101,6 +110,7 @@ class MainActivity : ComponentActivity() {
                                     selectedTab = tab
                                     adminPage = null
                                     isRegisteringCampsite = false
+                                    isUpdatingCampsite = false
                                     selectedCampsite = null
                                 }
                             )
@@ -147,6 +157,17 @@ class MainActivity : ComponentActivity() {
                                         onBack = { isRegisteringCampsite = false },
                                         modifier = Modifier.padding(innerPadding)
                                     )
+                                } else if (isUpdatingCampsite && selectedCampsite != null) {
+                                    UpdateCampsiteScreen(
+                                        campsite = selectedCampsite!!,
+                                        onCampsiteUpdated = { updatedCampsite ->
+                                            campsiteDB.addCampsite(updatedCampsite)
+                                            isUpdatingCampsite = false
+                                            selectedCampsite = null
+                                        },
+                                        onBack = { isUpdatingCampsite = false },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
                                 } else if (selectedCampsite == null) {
                                     if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
                                         OwnerHomeScreen(
@@ -164,27 +185,36 @@ class MainActivity : ComponentActivity() {
                                     }
                                 } else {
                                     val campsite = selectedCampsite!!
-                                    val isOnWaitingList = waitingListDB
-                                        .getWaitingList(campsite.id)
-                                        ?.contains(UserSession.currentUserId) == true
-                                    CampsiteDetailsScreen(
-                                        campsite = selectedCampsite!!,
-                                        onBack = { selectedCampsite = null },
-                                        isOnWaitingList = isOnWaitingList,
-                                        onJoinLottery = {
-                                            waitingListDB.joinWaitingList(
-                                                campsite.id,
-                                                UserSession.currentUserId
-                                            )
-                                        },
-                                        onLeaveWaitlist = {
-                                            waitingListDB.leaveWaitingList(
-                                                campsite.id,
-                                                UserSession.currentUserId
-                                            )
-                                        },
-                                        modifier = Modifier.padding(innerPadding)
-                                    )
+                                    if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
+                                        OwnerCampsiteDetailsScreen(
+                                            campsite = campsite,
+                                            onBack = { selectedCampsite = null },
+                                            onUpdateClick = { isUpdatingCampsite = true },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    } else {
+                                        val isOnWaitingList = waitingListDB
+                                            .getWaitingList(campsite.id)
+                                            ?.contains(UserSession.currentUserId) == true
+                                        CampsiteDetailsScreen(
+                                            campsite = selectedCampsite!!,
+                                            onBack = { selectedCampsite = null },
+                                            isOnWaitingList = isOnWaitingList,
+                                            onJoinLottery = {
+                                                waitingListDB.joinWaitingList(
+                                                    campsite.id,
+                                                    UserSession.currentUserId
+                                                )
+                                            },
+                                            onLeaveWaitlist = {
+                                                waitingListDB.leaveWaitingList(
+                                                    campsite.id,
+                                                    UserSession.currentUserId
+                                                )
+                                            },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    }
                                 }
                             }
 
