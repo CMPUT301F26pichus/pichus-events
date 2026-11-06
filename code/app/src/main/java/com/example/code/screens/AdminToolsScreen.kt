@@ -62,18 +62,6 @@ fun AdminToolsScreen(
             },
             onClick = onBrowseProfiles
         )
-
-        AdminToolCard(
-            title = "Browse Images",
-            description = "View uploaded images and manage inappropriate content.",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Image,
-                    contentDescription = null
-                )
-            },
-            onClick = onBrowseImages
-        )
     }
 }
 

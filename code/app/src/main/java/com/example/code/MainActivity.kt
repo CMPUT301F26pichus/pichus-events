@@ -183,6 +183,9 @@ class MainActivity : ComponentActivity() {
                                                 UserSession.currentUserId
                                             )
                                         },
+                                        onDeleteUser = { user ->
+                                            userDB.deleteUser(user)
+                                        },
                                         modifier = Modifier.padding(innerPadding)
                                     )
                                 }

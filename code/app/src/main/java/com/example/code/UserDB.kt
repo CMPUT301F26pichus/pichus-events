@@ -47,7 +47,11 @@ class UserDB {
      * @return Unit
      */
     fun deleteUser(user: User) {
-        usersRef.document(user.userID.toString()).delete()
+        usersRef.document(user.userID.toString())
+            .delete()
+            .addOnSuccessListener {
+                _users.removeAll { it.userID == user.userID }
+            }
     }
 
     /**
