@@ -35,13 +35,13 @@ fun ReservationsScreen(
     onReservationClick: (String) -> Unit, // campsite ID to open details for US 01.07.01 later
     modifier: Modifier = Modifier
 ) {
-    // 0 = Active Tab, 1 = Past Tab
+    // 0 = Active Tab, 1 = Past Tab, 2 = Canceled Tab
     var selectedTabIndex by remember { mutableStateOf(0) }
 
-    val reservations = if (selectedTabIndex == 0) {
-        reservationDB.viewActiveReservations(currentUser)
-    } else {
-        reservationDB.viewPastReservations(currentUser)
+    val reservations = when (selectedTabIndex) {
+        0 -> reservationDB.viewActiveReservations(currentUser)
+        1 -> reservationDB.viewPastReservations(currentUser)
+        else -> reservationDB.viewCancelledReservations(currentUser)
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -55,6 +55,11 @@ fun ReservationsScreen(
                 selected = selectedTabIndex == 1,
                 onClick = { selectedTabIndex = 1 },
                 text = { Text("Past", style = MaterialTheme.typography.titleMedium) }
+            )
+            Tab(
+                selected = selectedTabIndex == 2,
+                onClick = { selectedTabIndex = 2 },
+                text = { Text("Cancelled", style = MaterialTheme.typography.titleMedium) }
             )
         }
 

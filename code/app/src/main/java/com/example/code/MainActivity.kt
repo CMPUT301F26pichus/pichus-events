@@ -31,6 +31,7 @@ import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
 import com.example.code.screens.EditProfileScreen
 import com.example.code.screens.PolicyScreen
+import com.example.code.screens.ReservationDetailsScreen
 import com.example.code.screens.ReservationsScreen
 import com.example.code.screens.WelcomeScreen
 
@@ -52,6 +53,8 @@ class MainActivity : ComponentActivity() {
                 val waitingListDB = remember {WaitingListDB()}
                 // Connect to Firestore, listen for reservation changes
                 val reservationDB = remember {ReservationDB()}
+                //Track resrvations
+                var selectedReservationId by remember { mutableStateOf<String?>(null) }
 
                 // Remember which bottom navigation tab is selected
                 var selectedTab by rememberSaveable { mutableStateOf(AppTab.SEARCH) }
@@ -250,16 +253,41 @@ class MainActivity : ComponentActivity() {
                             }
 
                             AppTab.RESERVATIONS -> {
-                                ReservationsScreen(
-                                    currentUser=currentUser,
-                                    reservationDB = reservationDB,
-                                    campsiteDB = campsiteDB,
-                                    onReservationClick = { campsiteId ->
-                                        // for later (US 01.07.01 & 01.13.01)
-                                        // to open reservation details screen
-                                    },
-                                    modifier = Modifier.padding(innerPadding)
-                                )
+                                if (selectedReservationId !=null){
+                                    val currentUser = User("", UserSession.currentUserId, "", 0L, "Entrant")
+                                    val allUserReservations = reservationDB.viewActiveReservations(currentUser) +
+                                            reservationDB.viewPastReservations(currentUser) +
+                                            reservationDB.viewCancelledReservations(currentUser)
+
+                                    val reservation = allUserReservations.find { it.campsiteID == selectedReservationId }
+                                    val campsite = campsiteDB.campsites.find { it.id == selectedReservationId }
+
+                                    if (reservation != null && campsite != null) {
+                                        ReservationDetailsScreen(
+                                            reservation = reservation,
+                                            campsite = campsite,
+                                            onBack = { selectedReservationId = null },
+                                            onCancelReservation = {
+                                                reservationDB.cancelReservation(reservation)
+                                                selectedReservationId = null // Navigate back to list after cancelling
+                                            },
+                                            modifier = Modifier.padding(innerPadding)
+                                        )
+                                    } else {
+                                        // Fallback if data is missing
+                                        selectedReservationId = null
+                                    }
+                                } else {
+                                    ReservationsScreen(
+                                        currentUser = currentUser,
+                                        reservationDB = reservationDB,
+                                        campsiteDB = campsiteDB,
+                                        onReservationClick = { campsiteId ->
+                                            selectedReservationId = campsiteId
+                                        },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
+                                }
                             }
 
                             AppTab.NOTIFICATIONS -> {
