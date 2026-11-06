@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
+import com.example.code.screens.CreateWaitlistScreen
 import com.example.code.screens.OwnerCampsiteDetailsScreen
 import com.example.code.screens.OwnerHomeScreen
 import com.example.code.screens.RegisterCampsiteScreen
@@ -65,6 +66,9 @@ class MainActivity : ComponentActivity() {
                 // Controls whether the campsite update form is open
                 var isUpdatingCampsite by rememberSaveable { mutableStateOf(false) }
 
+                // Controls whether the waitlist creation/edit screen is open
+                var isCreatingWaitlist by rememberSaveable { mutableStateOf(false) }
+
                 // Tracks which admin screen is currently open
                 var adminPage by rememberSaveable { mutableStateOf<AdminPage?>(null) }
 
@@ -79,7 +83,7 @@ class MainActivity : ComponentActivity() {
 
 
                 // Back button goes to previous page browse screen instead of closing the app
-                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite || isUpdatingCampsite) {
+                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite || isUpdatingCampsite || isCreatingWaitlist) {
                     when {
                         adminPage != null -> {
                             adminPage = when (adminPage) {
@@ -95,6 +99,10 @@ class MainActivity : ComponentActivity() {
 
                         isUpdatingCampsite -> {
                             isUpdatingCampsite = false
+                        }
+
+                        isCreatingWaitlist -> {
+                            isCreatingWaitlist = false
                         }
 
                         selectedCampsite != null -> {
@@ -116,6 +124,7 @@ class MainActivity : ComponentActivity() {
                                     adminPage = null
                                     isRegisteringCampsite = false
                                     isUpdatingCampsite = false
+                                    isCreatingWaitlist = false
                                     selectedCampsite = null
                                 }
                             )
@@ -173,6 +182,17 @@ class MainActivity : ComponentActivity() {
                                         onBack = { isUpdatingCampsite = false },
                                         modifier = Modifier.padding(innerPadding)
                                     )
+                                } else if (isCreatingWaitlist && selectedCampsite != null) {
+                                    CreateWaitlistScreen(
+                                        campsite = selectedCampsite!!,
+                                        existingWaitlist = waitingListDB.getWaitingList(selectedCampsite!!.id),
+                                        onSaveWaitlist = { waitlist ->
+                                            waitingListDB.addWaitingList(waitlist)
+                                            isCreatingWaitlist = false
+                                        },
+                                        onBack = { isCreatingWaitlist = false },
+                                        modifier = Modifier.padding(innerPadding)
+                                    )
                                 } else if (selectedCampsite == null) {
                                     if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
                                         OwnerHomeScreen(
@@ -193,8 +213,11 @@ class MainActivity : ComponentActivity() {
                                     if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
                                         OwnerCampsiteDetailsScreen(
                                             campsite = campsite,
+                                            bookedReservations = reservationDB.reservations.filter { it.campsiteID == campsite.id && it.status == "ACTIVE" },
+                                            waitingList = waitingListDB.getWaitingList(campsite.id),
                                             onBack = { selectedCampsite = null },
                                             onUpdateClick = { isUpdatingCampsite = true },
+                                            onCreateWaitlistClick = { isCreatingWaitlist = true },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     } else {
