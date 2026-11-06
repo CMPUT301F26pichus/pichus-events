@@ -16,14 +16,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import com.example.code.components.BackButton
+import com.example.code.components.UserProfileCard
 import com.example.code.ui.theme.PichusTheme
 import androidx.compose.ui.unit.dp
+import com.example.code.Campsite
 import com.example.code.User
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 
 /**
  * Allows an administrator to browse all user profiles.
@@ -34,6 +43,7 @@ import com.example.code.User
 fun BrowseProfilesScreen(
     users: List<User>,
     onBack: () -> Unit,
+    onDeleteUser: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -45,6 +55,35 @@ fun BrowseProfilesScreen(
                 user.email.contains(searchText, ignoreCase = true) ||
                 user.role.contains(searchText, ignoreCase = true) ||
                 user.phoneNum.toString().contains(searchText)
+    }
+
+    var userToDelete by remember { mutableStateOf<User?>(null) }
+
+    userToDelete?.let { user ->
+        AlertDialog(
+            onDismissRequest = { userToDelete = null },
+            title = { Text("Delete User") },
+            text = {
+                Text("Are you sure you want to delete ${user.name}?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteUser(user)
+                        userToDelete = null
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { userToDelete = null }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     Column(
@@ -96,45 +135,16 @@ fun BrowseProfilesScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(filteredUsers) { user ->
-                    UserProfileCard(user = user)
+                    Column {
+                        UserProfileCard(
+                            user = user,
+                            onDeleteClick = {
+                                userToDelete = user
+                            }
+                        )
+                    }
                 }
             }
-        }
-    }
-}
-
-/**
- * Displays the information belonging to one user.
- */
-@Composable
-private fun UserProfileCard(user: User) {
-    Card( modifier = Modifier.fillMaxWidth() ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Text(
-                text = user.name.ifBlank { "Unnamed User" },
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Text(
-                text = "Role: ${user.role.ifBlank { "Not specified" }}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Text(
-                text = "Email: ${user.email.ifBlank { "Not provided" }}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Text(
-                text = "Phone: ${
-                    if (user.phoneNum > 0) user.phoneNum.toString()
-                    else "Not provided"
-                }",
-                style = MaterialTheme.typography.bodyMedium
-            )
         }
     }
 }
@@ -175,6 +185,7 @@ private fun BrowseProfilesScreenPreview() {
                     role = "Campsite Owner"
                 )
             ),
+            onDeleteUser = {},
             onBack = {}
         )
     }

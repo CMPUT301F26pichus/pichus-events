@@ -29,8 +29,10 @@ import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
 import com.example.code.screens.EditProfileScreen
+import com.example.code.screens.OwnerCampsiteDetailsScreen
 import com.example.code.screens.PolicyScreen
 import com.example.code.screens.WelcomeScreen
+
 
 /**
  * App entry point. Wraps all content in the pichus theme.
@@ -215,7 +217,7 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
-                                }
+                                   }
                             }
 
                             AppTab.RESERVATIONS -> {
@@ -270,6 +272,9 @@ class MainActivity : ComponentActivity() {
                                             users = userDB.users,
                                             onBack = {
                                                 adminPage = AdminPage.MENU
+                                            },
+                                            onDeleteUser = { user ->
+                                                userDB.deleteUser(user)
                                             },
                                             modifier = Modifier.padding(innerPadding)
                                         )
