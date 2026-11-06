@@ -52,9 +52,10 @@ class ReservationDB {
      */
     fun viewActiveReservations(user: User): List<Reservation> {
         return if (user.role == "Entrant") {
-            _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE" && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
+            // Check that the end date is in the future (has not ended yet)
+            _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE" && it.endDate!! >= Timestamp.now() }
         } else {
-            _reservations.filter { it.ownerID == user.userID && it.status == "ACTIVE" && (it.startDate!! >= Timestamp.now() || it.endDate!! <= Timestamp.now()) }
+            _reservations.filter { it.ownerID == user.userID && it.status == "ACTIVE" && it.endDate!! >= Timestamp.now() }
         }
     }
 
