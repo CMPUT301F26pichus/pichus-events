@@ -20,6 +20,9 @@ import com.example.code.Reservation
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+/* Responsible for displaying a selected reservation's details and allows
+for cancellations.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReservationDetailsScreen(
