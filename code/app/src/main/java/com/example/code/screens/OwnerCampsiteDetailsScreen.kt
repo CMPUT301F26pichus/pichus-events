@@ -2,6 +2,7 @@ package com.example.code.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.code.Campsite
 import com.example.code.Reservation
+import com.example.code.WaitingList
 import com.example.code.components.BackButton
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.DarkBrown
@@ -34,6 +36,8 @@ import java.util.Locale
 
 /**
  * US 02.01.04: As a campsite owner, I want to view details of my campsite.
+ * US 02.06.01: As a campsite owner, I want to view currently booked dates.
+ * US 02.04.03, 02.04.07: As a campsite owner, I want to set a registration period & capacity for my waitlist.
  * US 02.06.01: As a campsite owner, I want to view the currently booked dates for my campsite.
  */
 @Composable
@@ -43,6 +47,8 @@ fun OwnerCampsiteDetailsScreen(
     onUpdateClick: () -> Unit,
     modifier: Modifier = Modifier,
     bookedReservations: List<Reservation> = emptyList(),
+    waitingList: WaitingList? = null,
+    onCreateWaitlistClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -110,6 +116,66 @@ fun OwnerCampsiteDetailsScreen(
             }
         }
 
+        // Lottery Settings Section (US 02.04.03, US 02.04.07)
+        Text(
+            text = "Lottery Settings:",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(top = 8.dp, bottom = 4.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (waitingList == null) {
+                    Text(
+                        text = "No lottery configured for this campsite.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                } else {
+                    DetailRow(
+                        label = "Capacity",
+                        value = waitingList.capacity?.toString() ?: "Unlimited"
+                    )
+                    DetailRow(
+                        label = "Registration Deadline",
+                        value = formatDeadline(waitingList.registrationDeadline)
+                    )
+                    DetailRow(
+                        label = "Current Entrants",
+                        value = "${waitingList.entrantIDs.size} joined"
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                Button(
+                    onClick = onCreateWaitlistClick,
+                    shape = RoundedCornerShape(50),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = DarkBrown,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = if (waitingList == null) "Create Lottery" else "Edit Lottery",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
         // Booked Dates Section (US 02.06.01)
         Text(
             text = "Booked dates:",
@@ -152,6 +218,11 @@ fun OwnerCampsiteDetailsScreen(
     }
 }
 
+private fun formatDeadline(timestamp: Timestamp?): String {
+    if (timestamp == null) return "No deadline"
+    return SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(timestamp.toDate())
+}
+
 private fun formatDate(timestamp: Timestamp?): String {
     if (timestamp == null) return "N/A"
     return SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(timestamp.toDate())
@@ -180,8 +251,10 @@ private fun OwnerCampsiteDetailsScreenPreview() {
         OwnerCampsiteDetailsScreen(
             campsite = SampleCampsites.all().first(),
             bookedReservations = emptyList(),
+            waitingList = null,
             onBack = {},
-            onUpdateClick = {}
+            onUpdateClick = {},
+            onCreateWaitlistClick = {}
         )
     }
 }
