@@ -41,6 +41,7 @@ fun CampsiteDetailsScreen(
     onBack: () -> Unit, // For back arrow option
     modifier: Modifier = Modifier,
     isOnWaitingList: Boolean = false,
+    isWaitlistOpen: Boolean,
     onJoinLottery: () -> Boolean = {true},
     onLeaveWaitlist: () -> Boolean = {true},
     isAdmin: Boolean = false,
@@ -84,41 +85,51 @@ fun CampsiteDetailsScreen(
             ) {
                 Text("REMOVE CAMPSITE")
             }
-        } else if (isOnWaitingList) {
-            // shows joined if entrant is alr on the waiting list
-            Surface(
-                shape = RoundedCornerShape(50),
-                color = MaterialTheme.colorScheme.secondaryContainer
-            ) {
-                Text(
-                    text = "JOINED",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                )
-            }
+        } else if (isWaitlistOpen) {
+            if (isOnWaitingList) {
+                // shows joined if entrant is alr on the waiting list
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                ) {
+                    Text(
+                        text = "JOINED",
+                        style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
 
-            Button(
-                onClick = {
-                    errorMessage = null
-                    onLeaveWaitlist()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("LEAVE WAITLIST")
+                Button(
+                    onClick = {
+                        errorMessage = null
+                        onLeaveWaitlist()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("LEAVE WAITLIST")
+                }
+            } else {
+                Button(
+                    onClick = {
+                        val success = onJoinLottery()
+                        errorMessage = if (!success) {
+                            "Unable to join: waiting list is full or registration is closed."
+                        } else {
+                            null
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("JOIN LOTTERY")
+                }
             }
-        } else {
+        }else{
             Button(
-                onClick = {
-                    val success = onJoinLottery()
-                    errorMessage = if (!success) {
-                        "Unable to join: waiting list is full or registration is closed."
-                    } else {
-                        null
-                    }
-                },
+                onClick = { },
+                enabled = false,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("JOIN LOTTERY")
+                Text("LOTTERY NOT OPEN YET")
             }
         }
 

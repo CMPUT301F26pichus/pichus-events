@@ -222,13 +222,14 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     } else {
-                                        val isOnWaitingList = waitingListDB
-                                            .getWaitingList(campsite.id)
-                                            ?.contains(UserSession.currentUserId) == true
+                                        val waitlist = waitingListDB.getWaitingList(campsite.id)
+                                        val isWaitlistOpen = waitlist != null
+                                        val isOnWaitingList = waitlist?.contains(UserSession.currentUserId) == true
                                         CampsiteDetailsScreen(
                                             campsite = selectedCampsite!!,
                                             onBack = { selectedCampsite = null },
                                             isOnWaitingList = isOnWaitingList,
+                                            isWaitlistOpen=isWaitlistOpen,
                                             onJoinLottery = {
                                                 waitingListDB.joinWaitingList(
                                                     campsite.id,
