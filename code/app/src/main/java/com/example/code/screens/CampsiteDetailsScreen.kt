@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,8 +43,13 @@ fun CampsiteDetailsScreen(
     isOnWaitingList: Boolean = false,
     onJoinLottery: () -> Boolean = {true},
     onLeaveWaitlist: () -> Boolean = {true},
+    isAdmin: Boolean = false,
+    onDeleteCampsite: () -> Unit = {}
 ) {
     var errorMessage by remember(campsite.id, isOnWaitingList) {mutableStateOf<String?>(null)}
+
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+
     // Everything should be stacked top to bottom with small gaps between each line
     Column(
         modifier = modifier
@@ -71,7 +73,18 @@ fun CampsiteDetailsScreen(
 
         Spacer(Modifier.height(16.dp)) //extra space before button
 
-        if (isOnWaitingList) {
+        if (isAdmin) {
+            // Only admins can remove campsites
+            Button(
+                onClick = { showDeleteConfirmation = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text("REMOVE CAMPSITE")
+            }
+        } else if (isOnWaitingList) {
             // shows joined if entrant is alr on the waiting list
             Surface(
                 shape = RoundedCornerShape(50),
@@ -116,5 +129,30 @@ fun CampsiteDetailsScreen(
                 style = MaterialTheme.typography.bodySmall
             )
         }
+    }
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Remove Campsite?") },
+            text = { Text("Are you sure you want to permanently remove ${campsite.name}?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        onDeleteCampsite()
+                    },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("REMOVE")
+                }
+            },
+            dismissButton = {
+                Button( onClick = { showDeleteConfirmation = false } ) {
+                    Text("CANCEL")
+                }
+            }
+        )
     }
 }
