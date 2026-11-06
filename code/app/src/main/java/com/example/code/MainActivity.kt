@@ -195,6 +195,7 @@ class MainActivity : ComponentActivity() {
                                             campsite = campsite,
                                             onBack = { selectedCampsite = null },
                                             onUpdateClick = { isUpdatingCampsite = true },
+                                            bookedReservations = reservationDB.reservations.filter { it.campsiteID == campsite.id && it.status == "ACTIVE" },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     } else {

@@ -23,21 +23,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.code.Campsite
+import com.example.code.Reservation
 import com.example.code.components.BackButton
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.DarkBrown
 import com.example.code.ui.theme.PichusTheme
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * US 02.01.04: As a campsite owner, I want to view details of my campsite.
- * Displays campsite details and an Update button for editing (US 02.01.03).
+ * US 02.06.01: As a campsite owner, I want to view the currently booked dates for my campsite.
  */
 @Composable
 fun OwnerCampsiteDetailsScreen(
     campsite: Campsite,
     onBack: () -> Unit,
     onUpdateClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    bookedReservations: List<Reservation> = emptyList(),
 ) {
     Column(
         modifier = modifier
@@ -78,6 +83,7 @@ fun OwnerCampsiteDetailsScreen(
             )
         }
 
+        // Details Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -103,7 +109,52 @@ fun OwnerCampsiteDetailsScreen(
                 DetailRow(label = "Description / Rules", value = campsite.policy.ifBlank { "None" })
             }
         }
+
+        // Booked Dates Section (US 02.06.01)
+        Text(
+            text = "Booked dates:",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(top = 8.dp, bottom = 4.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (bookedReservations.isEmpty()) {
+                    Text(
+                        text = "No booked dates for this campsite.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                } else {
+                    bookedReservations.forEach { res ->
+                        val start = formatDate(res.startDate)
+                        val end = formatDate(res.endDate)
+                        Text(
+                            text = "• $start  to  $end",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
     }
+}
+
+private fun formatDate(timestamp: Timestamp?): String {
+    if (timestamp == null) return "N/A"
+    return SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(timestamp.toDate())
 }
 
 @Composable
@@ -128,6 +179,7 @@ private fun OwnerCampsiteDetailsScreenPreview() {
     PichusTheme {
         OwnerCampsiteDetailsScreen(
             campsite = SampleCampsites.all().first(),
+            bookedReservations = emptyList(),
             onBack = {},
             onUpdateClick = {}
         )
