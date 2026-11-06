@@ -49,7 +49,6 @@ fun RegisterCampsiteScreen(
     var location by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var occupancyText by rememberSaveable { mutableStateOf("") }
-    var tags by rememberSaveable { mutableStateOf("") }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     Column(
@@ -99,13 +98,6 @@ fun RegisterCampsiteScreen(
             onValueChange = { occupancyText = it.filter { char -> char.isDigit() } },
             placeholderText = "Max Occupancy: #",
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-
-        // 5. Tags
-        CampsitePillTextField(
-            value = tags,
-            onValueChange = { tags = it },
-            placeholderText = "Tags"
         )
 
         if (errorMessage != null) {
