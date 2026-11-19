@@ -7,8 +7,6 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores all campsites in FireBase, and allows retrieval, update and addition functionalities
  *
- * In Part 4: Ensure that deletions/updates of campsites result in the appropriate updates/removals in
- * reservation and waiting list dbs
  */
 class CampsiteDB {
     private val db = Firebase.firestore
@@ -25,13 +23,13 @@ class CampsiteDB {
         get() = _campsites
 
     /**
-     * Adds a campsite to the database
+     * Adds a campsite to the database, also allows updates
      *
      * @param campsite campsite to be added
      * @return Unit
      */
     fun addCampsite(campsite: Campsite) {
-        campsitesRef.document(campsite.ownerID.toString() + "_" + campsite.name).set(campsite)
+        campsitesRef.document(campsite.id).set(campsite)
     }
 
     /**
@@ -41,7 +39,84 @@ class CampsiteDB {
      * @return Unit
      */
     fun deleteCampsite(campsite: Campsite) {
-        campsitesRef.document(campsite.ownerID.toString() + "_" + campsite.name).delete()
+        campsitesRef.document(campsite.id).delete()
+    }
+
+    /**
+     * Removes all campsites of a given user in the database
+     *
+     * @param user the user whose campsites are to be removed
+     * @return Unit
+     */
+    fun removeAll(user: User) {
+        val campsitesToRemove = _campsites.filter { it.ownerID == user.userID}
+        for (campsite in campsitesToRemove) {
+            deleteCampsite(campsite)
+        }
+    }
+
+    /**
+     * Updates a campsite's occupancy in the database
+     *
+     * @param newOccupancy new occupancy
+     * @param campsite campsite to be updated
+     * @return Unit
+     */
+    fun updateOccupancy(newOccupancy: String, campsite: Campsite) {
+        if (newOccupancy.toIntOrNull() != null && newOccupancy.toInt() > 0) {
+            campsite.occupancy = newOccupancy.toInt()
+            addCampsite(campsite) // updates the occupancy
+        }
+    }
+
+    /**
+     * Updates a campsite's price in the database
+     *
+     * @param newPrice new price
+     * @param campsite campsite to be updated
+     * @return Unit
+     */
+    fun updatePrice(newPrice: String, campsite: Campsite) {
+        if (newPrice.toDoubleOrNull() != null && newPrice.toDouble() > 0.0) {
+            campsite.price = newPrice.toDouble()
+            addCampsite(campsite) // updates the price
+        }
+    }
+
+    /**
+     * Updates a campsite's policy in the database
+     *
+     * @param newPolicy new policy
+     * @param campsite campsite to be updated
+     * @return Unit
+     */
+    fun updatePolicy(newPolicy: String, campsite: Campsite) {
+            campsite.policy = newPolicy
+            addCampsite(campsite) // updates the policy
+    }
+
+    /**
+     * Updates a campsite's description in the database
+     *
+     * @param newDescription new description
+     * @param campsite campsite to be updated
+     * @return Unit
+     */
+    fun updateDescription(newDescription: String, campsite: Campsite) {
+        campsite.description = newDescription
+        addCampsite(campsite) // updates the description
+    }
+
+    /**
+     * Updates a campsite's tags in the database
+     *
+     * @param newTags new tags
+     * @param campsite campsite to be updated
+     * @return Unit
+     */
+    fun updateTags(newTags: String, campsite: Campsite) {
+        campsite.tags = newTags
+        addCampsite(campsite) // updates the tags
     }
 
     /**
@@ -53,8 +128,7 @@ class CampsiteDB {
     fun viewOwnCampsites(owner: User): List<Campsite> {
         return _campsites.filter { it.ownerID == owner.userID }
     }
-
-
+    
     /**
      * Obtains campsites meeting an occupancy requirement
      *
