@@ -58,6 +58,20 @@ class AvailabilityDB {
     }
 
     /**
+     * Adds a date to the campsite's availability in the database
+     *
+     * @param timestamp date to be added
+     * @return Unit
+     */
+    fun addDate(campsite: Campsite, timestamp: Timestamp) {
+        val availabilityToModify = availabilities.filter { it.campsiteID == campsite.id }
+        for (availability in availabilityToModify) {
+            availability.dates?.add(timestamp)
+            addAvailability(availability)
+        }
+    }
+
+    /**
      * Obtains a list of available dates for a given campsite
      *
      * @param campsite used to only return a specific campsites availability
