@@ -335,6 +335,7 @@ class MainActivity : ComponentActivity() {
                                                     // Return to the welcome screen
                                                     showWelcome = true
                                                 },
+                                                onProfilePictureUploaded = { imageUrl ->  userDB.updateProfilePicture(currentUser, imageUrl) },
                                                 modifier = Modifier.padding(innerPadding)
                                             )
                                         }

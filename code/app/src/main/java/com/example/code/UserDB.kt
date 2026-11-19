@@ -71,7 +71,7 @@ class UserDB {
     fun updateName(user: User, newName: String) {
         if (newName.isNotEmpty()) {
             val updatedProfile =
-                User(newName, user.userID, user.email, user.phoneNum, user.role)
+                User(newName, user.userID, user.email, user.phoneNum, user.role, user.deviceID, user.profilePictureUrl)
             usersRef.document(user.userID.toString()).set(updatedProfile)
         }
     }
@@ -88,7 +88,7 @@ class UserDB {
     fun updateEmail(user: User, newEmail: String) {
         if (newEmail.isNotEmpty()) {
             val updatedProfile =
-                User(user.name, user.userID, newEmail, user.phoneNum, user.role)
+                User(user.name, user.userID, newEmail, user.phoneNum, user.role, user.deviceID, user.profilePictureUrl)
             usersRef.document(user.userID.toString()).set(updatedProfile)
         }
     }
@@ -103,9 +103,20 @@ class UserDB {
      */
     fun updatePhoneNum(user: User, newNum: String) {
         if (newNum.length == 10) {
-            val updatedProfile = User(user.name, user.userID, user.email, newNum.toLong(), user.role)
+            val updatedProfile = User(user.name, user.userID, user.email, newNum.toLong(), user.role, user.deviceID, user.profilePictureUrl)
             usersRef.document(user.userID.toString()).set(updatedProfile)
         }
+    }
+
+    /**
+     * Updates the user's profile picture URL in Firestore.
+     *
+     * @param user user wanting to update their profile picture
+     * @param imageUrl image URL they want to change to
+     */
+    fun updateProfilePicture(user: User, imageUrl: String) {
+        usersRef.document(user.userID.toString())
+            .update("profilePictureUrl", imageUrl)
     }
 
     /**

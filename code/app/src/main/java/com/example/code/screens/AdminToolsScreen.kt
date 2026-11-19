@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.code.components.BackButton
+import com.example.code.components.AdminToolCard
 import com.example.code.ui.theme.PichusTheme
 
 /**
@@ -62,54 +63,17 @@ fun AdminToolsScreen(
             },
             onClick = onBrowseProfiles
         )
-    }
-}
-
-/**
- * Reusable card representing one admin tool.
- */
-@Composable
-private fun AdminToolCard(
-    title: String,
-    description: String,
-    icon: @Composable () -> Unit,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        androidx.compose.foundation.layout.Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            androidx.compose.foundation.layout.Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                icon()
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Open $title"
-            )
-        }
+        AdminToolCard(
+            title = "Browse Images",
+            description = "View and manage images uploaded to campsites.",
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = null
+                )
+            },
+            onClick = onBrowseImages
+        )
     }
 }
 

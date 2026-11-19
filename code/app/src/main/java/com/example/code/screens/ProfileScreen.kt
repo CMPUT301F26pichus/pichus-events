@@ -35,7 +35,8 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onAdminTools: () -> Unit,
     onLogout: () -> Unit,
-    modifier: Modifier = Modifier
+    onProfilePictureUploaded: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
@@ -50,7 +51,12 @@ fun ProfileScreen(
         )
 
         // Profile picture
-        ProfilePicture()
+        if (user != null) {
+            ProfilePicture(
+                userId = user.userID,
+                onImageUploaded = onProfilePictureUploaded
+            )
+        }
 
         if (user == null) {
             Text(
