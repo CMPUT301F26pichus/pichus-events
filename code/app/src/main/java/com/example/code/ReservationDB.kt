@@ -45,6 +45,36 @@ class ReservationDB {
     }
 
     /**
+     * Cancels all reservations of a given user in the database, setting it to 'CANCELLED'
+     *
+     * @param user the user whose reservations are to be cancelled
+     * @return Unit
+     */
+    fun cancelAll(user: User) {
+        var reservationsToCancel = _reservations.filter { it.customerID == user.userID && it.status == "ACTIVE"}
+        for (reservation in reservationsToCancel) {
+            cancelReservation(reservation)
+        }
+        reservationsToCancel =  _reservations.filter { it.ownerID == user.userID && it.status == "ACTIVE"}
+        for (reservation in reservationsToCancel) {
+            cancelReservation(reservation)
+        }
+    }
+
+    /**
+     * Cancels all reservations of a given campsite, setting it to 'CANCELLED'
+     *
+     * @param campsite the campsite which reservations are to be cancelled
+     * @return Unit
+     */
+    fun cancelCampsiteReservations(campsite: Campsite) {
+        val reservationsToCancel = _reservations.filter { it.campsiteID == campsite.id && it.status == "ACTIVE"}
+        for (reservation in reservationsToCancel) {
+            cancelReservation(reservation)
+        }
+    }
+
+    /**
      * Obtains a user's active reservations
      *
      * @param user used to only return a specific user's active reservations

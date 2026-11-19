@@ -7,9 +7,6 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores all users (admin, entrants, campsite owner) in FireBase, and allows retrieval, update,
  * addition, and deletion functionalities
- *
- * In Part 4: Ensure that deletions of a user profile result in the appropriate updates/removals in
- * reservation, waiting list and campsite dbs
  */
 class UserDB {
     private val db = Firebase.firestore
@@ -56,6 +53,10 @@ class UserDB {
             .addOnSuccessListener {
                 _users.removeAll { it.userID == user.userID }
             }
+    }
+    fun getUser(deviceID: String): User {
+        val user = _users.filter {it.deviceID == deviceID}
+        return user[0]
     }
 
     /**
