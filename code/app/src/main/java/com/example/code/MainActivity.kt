@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import com.example.code.screens.PolicyScreen
 import com.example.code.screens.ReservationDetailsScreen
 import com.example.code.screens.ReservationsScreen
 import com.example.code.screens.WelcomeScreen
+import com.google.firebase.Timestamp
+import kotlinx.coroutines.delay
 
 
 /**
@@ -53,6 +56,10 @@ class MainActivity : ComponentActivity() {
                 val waitingListDB = remember {WaitingListDB()}
                 // Connect to Firestore, listen for reservation changes
                 val reservationDB = remember {ReservationDB()}
+                // Connect to Firestore, listen for lottery changes
+                val lotteryDB = remember { LotteryDB() }
+                val notificationService = remember { NotificationService(NotificationDB(), userDB) }
+                val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
                 //Track resrvations
                 var selectedReservationId by remember { mutableStateOf<String?>(null) }
 
@@ -156,6 +163,18 @@ class MainActivity : ComponentActivity() {
                         val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
                             ?: User(name = "Owner", userID = UserSession.currentUserId, role = "Campsite Owner")
 
+                        // US 02.05.01: while an owner is signed in, draw their lotteries once registration ends.
+                        // The lottery's waiting list is the campsite's list in WaitingListDB (lotteryID = campsite ID).
+                        LaunchedEffect(currentUser.userID) {
+                            while (true) {
+                                lotteryDB.viewOwnLotteries(currentUser).forEach { lottery ->
+                                    waitingListDB.getWaitingList(lottery.lotteryID)?.let { lottery.waitingList = it }
+                                    lotteryService.closeIfDue(lottery)
+                                }
+                                delay(60_000)
+                            }
+                        }
+
                         // Decide which screen to display
                         when (selectedTab) {
 
@@ -188,6 +207,21 @@ class MainActivity : ComponentActivity() {
                                         existingWaitlist = waitingListDB.getWaitingList(selectedCampsite!!.id),
                                         onSaveWaitlist = { waitlist ->
                                             waitingListDB.addWaitingList(waitlist)
+                                            // One lottery per campsite for now, ID = campsite ID. Never reopen a drawn one.
+                                            val existing = lotteryDB.viewOwnLotteries(currentUser).find { it.lotteryID == waitlist.campsiteID }
+                                            if (existing?.status != LotteryStatus.COMPLETE) {
+                                                lotteryDB.addLottery(
+                                                    Lottery(
+                                                        lotteryID = waitlist.campsiteID,
+                                                        ownerID = currentUser.userID,
+                                                        campsiteIDs = listOf(waitlist.campsiteID),
+                                                        registrationStart = existing?.registrationStart ?: Timestamp.now(),
+                                                        registrationEnd = waitlist.registrationDeadline ?: Timestamp.now(),
+                                                        numWinners = existing?.numWinners ?: 1,
+                                                        waitingList = waitlist
+                                                    )
+                                                )
+                                            }
                                             isCreatingWaitlist = false
                                         },
                                         onBack = { isCreatingWaitlist = false },

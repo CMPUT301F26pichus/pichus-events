@@ -14,6 +14,7 @@ import android.provider.Settings
  * @property phoneNum phone number
  * @property role used to display the correct views and allow the user to perform the relevant operations
  * @property deviceID android ID used to identify user
+ * @property notificationsEnabled false if the user opted out of notifications (US 01.10.01)
  *
  */
 class User(val name: String = "",
@@ -21,5 +22,6 @@ class User(val name: String = "",
            var email: String = "",
            var phoneNum: Long = -1,
            var role: String = "",
-           var deviceID: String = "")
+           var deviceID: String = "",
+           var notificationsEnabled: Boolean = true)
 
