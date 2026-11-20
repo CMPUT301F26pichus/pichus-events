@@ -65,4 +65,17 @@ class WaitingListDBTest {
     fun removeEntrantFromAllWithNoListsDoesNothing() {
         assertTrue(waitingListDB.removeEntrantFromAll(fakeID()).isEmpty())
     }
+
+    @Test
+    fun getEntrantsForPoolsListsWithoutDuplicates() {
+        addList(first, entrant, other)
+        addList(second, other)
+        assertEquals(listOf(entrant, other), waitingListDB.getEntrantsFor(listOf(first, second)))
+    }
+
+    @Test
+    fun getEntrantsForSkipsCampsitesWithNoList() {
+        addList(first, entrant)
+        assertEquals(listOf(entrant), waitingListDB.getEntrantsFor(listOf(first, "test_none_${fakeID()}")))
+    }
 }
