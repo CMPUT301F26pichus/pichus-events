@@ -63,7 +63,7 @@ class WaitingListDB {
      * @return the list, or null if the campsite has none yet
      */
     fun getWaitingList(campsiteID: String): WaitingList? {
-        return _waitingLists.find { it.campsiteID == campsiteID }
+        return _waitingLists.toList().find { it.campsiteID == campsiteID }
     }
 
     /**
@@ -127,7 +127,21 @@ class WaitingListDB {
      * @return the lists, or an empty list if the entrant has joined none
      */
     fun viewJoinedWaitingLists(entrant: User): List<WaitingList> {
-        return _waitingLists.filter { it.contains(entrant.userID) }
+        return _waitingLists.toList().filter { it.contains(entrant.userID) }
+    }
+
+    /**
+     * Pools the entrants of several campsites, for a lottery that covers all of them (US 02.04.02).
+     * Someone who joined two of the campsites counts once.
+     *
+     * @param campsiteIDs campsites in the lottery
+     * @return every entrant across those lists, no duplicates, in join order
+     */
+    fun getEntrantsFor(campsiteIDs: List<String>): List<Int> {
+        return campsiteIDs
+            .mapNotNull { getWaitingList(it) }
+            .flatMap { it.entrantIDs }
+            .distinct()
     }
 
     /**
@@ -139,7 +153,7 @@ class WaitingListDB {
      * @return campsite IDs of the lists the entrant was removed from
      */
     fun removeEntrantFromAll(entrantID: Int): List<String> {
-        val campsiteIDs = _waitingLists.filter { it.contains(entrantID) }.map { it.campsiteID }
+        val campsiteIDs = _waitingLists.toList().filter { it.contains(entrantID) }.map { it.campsiteID }
         campsiteIDs.forEach { campsiteID ->
             val docRef = waitingListsRef.document(campsiteID)
             db.runTransaction { transaction ->

@@ -164,11 +164,14 @@ class MainActivity : ComponentActivity() {
                             ?: User(name = "Owner", userID = UserSession.currentUserId, role = "Campsite Owner")
 
                         // US 02.05.01: while an owner is signed in, draw their lotteries once registration ends.
-                        // The lottery's waiting list is the campsite's list in WaitingListDB (lotteryID = campsite ID).
+                        // The lottery draws from the pooled waiting lists of all its campsites (US 02.04.02).
                         LaunchedEffect(currentUser.userID) {
                             while (true) {
                                 lotteryDB.viewOwnLotteries(currentUser).forEach { lottery ->
-                                    waitingListDB.getWaitingList(lottery.lotteryID)?.let { lottery.waitingList = it }
+                                    lottery.waitingList = WaitingList(
+                                        lottery.lotteryID,
+                                        waitingListDB.getEntrantsFor(lottery.campsiteIDs).toMutableList()
+                                    )
                                     lotteryService.closeIfDue(lottery)
                                 }
                                 delay(60_000)
