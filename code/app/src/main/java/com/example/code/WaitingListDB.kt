@@ -131,6 +131,28 @@ class WaitingListDB {
     }
 
     /**
+     * Removes an entrant from every waiting list they joined.
+     * Part 4 cascade: call this when a user profile is deleted.
+     * Each list is updated in a transaction, so entrants joining at the same time are not lost.
+     *
+     * @param entrantID entrant being deleted
+     * @return campsite IDs of the lists the entrant was removed from
+     */
+    fun removeEntrantFromAll(entrantID: Int): List<String> {
+        val campsiteIDs = _waitingLists.filter { it.contains(entrantID) }.map { it.campsiteID }
+        campsiteIDs.forEach { campsiteID ->
+            val docRef = waitingListsRef.document(campsiteID)
+            db.runTransaction { transaction ->
+                val waitingList = transaction.get(docRef).toObject(WaitingList::class.java)
+                if (waitingList != null && waitingList.leave(entrantID)) {
+                    transaction.set(docRef, waitingList)
+                }
+            }
+        }
+        return campsiteIDs
+    }
+
+    /**
      * Updates local _waitingLists list
      */
     init {
