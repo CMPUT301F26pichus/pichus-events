@@ -19,6 +19,14 @@ class NotificationTest {
     }
 
     @Test
+    fun entrantCanMessageOwner() {
+        val notification = Notification(Message(5, 9, "Is the site pet friendly?", Timestamp.now()), NotificationType.ENTRANT_MESSAGE)
+        assertEquals(5, notification.message.senderID)
+        assertEquals(9, notification.message.receiverID)
+        assertEquals(NotificationType.ENTRANT_MESSAGE, notification.type)
+    }
+
+    @Test
     fun defaultIsOwnerAnnouncement() {
         assertEquals(NotificationType.OWNER_ANNOUNCEMENT, Notification().type)
     }
@@ -27,7 +35,7 @@ class NotificationTest {
     fun typesMatchTheUml() {
         assertEquals(
             listOf("LOTTERY_WON", "LOTTERY_LOST", "JOINED_WAITLIST",
-                "RESERVATION_CONFIRMED", "RESERVATION_CANCELLED", "OWNER_ANNOUNCEMENT"),
+                "RESERVATION_CONFIRMED", "RESERVATION_CANCELLED", "OWNER_ANNOUNCEMENT", "ENTRANT_MESSAGE"),
             NotificationType.entries.map { it.name }
         )
     }
