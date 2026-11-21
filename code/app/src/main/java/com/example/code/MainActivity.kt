@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 val campsiteDB = remember { CampsiteDB() }
                 // Connect to Firestore, listens for user profile changes
                 val userDB = remember { UserDB() }
-
+                // Connect to Firestore
                 val imageDB = remember { ImageDB() }
                 // Connect to Firestore, listen to waiting list changes
                 val waitingListDB = remember {WaitingListDB()}
@@ -389,11 +389,21 @@ class MainActivity : ComponentActivity() {
                                     AdminPage.PROFILES -> {
                                         BrowseProfilesScreen(
                                             users = userDB.users,
-                                            onBack = {
-                                                adminPage = AdminPage.MENU
-                                            },
-                                            onDeleteUser = { user ->
-                                                userDB.deleteUser(user)
+                                            imageDB = imageDB,
+                                            onBack = { adminPage = AdminPage.MENU },
+                                            onDeleteUser = { user -> userDB.deleteUser(user) },
+                                            onDeleteProfilePicture = { user ->
+                                                imageDB.deleteImage(
+                                                    id = user.profilePictureId,
+                                                    onSuccess = { userDB.updateProfilePicture(user, "") },
+                                                    onFailure = { exception ->
+                                                        android.util.Log.e(
+                                                            "BrowseProfiles",
+                                                            "Failed to delete profile picture",
+                                                            exception
+                                                        )
+                                                    }
+                                                )
                                             },
                                             modifier = Modifier.padding(innerPadding)
                                         )

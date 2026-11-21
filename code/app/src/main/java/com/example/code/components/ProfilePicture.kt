@@ -3,7 +3,6 @@ package com.example.code.components
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -19,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.bumptech.glide.Glide
 import com.example.code.Image
 import com.example.code.ImageDB
 import kotlinx.coroutines.Dispatchers
