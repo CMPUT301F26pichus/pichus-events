@@ -49,6 +49,8 @@ class MainActivity : ComponentActivity() {
                 val campsiteDB = remember { CampsiteDB() }
                 // Connect to Firestore, listens for user profile changes
                 val userDB = remember { UserDB() }
+
+                val imageDB = remember { ImageDB() }
                 // Connect to Firestore, listen to waiting list changes
                 val waitingListDB = remember {WaitingListDB()}
                 // Connect to Firestore, listen for reservation changes
@@ -318,24 +320,21 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             ProfileScreen(
                                                 user = currentUser,
-                                                onEditProfile = { editingProfile = true }, // opens edit profile
+                                                imageDB = imageDB,
+                                                onEditProfile = { editingProfile = true },
                                                 onAdminTools = { adminPage = AdminPage.MENU },
                                                 onLogout = {
-                                                    // Clear the current user session
                                                     UserSession.currentUserId = -1
-
-                                                    // Reset navigation state
                                                     selectedTab = AppTab.SEARCH
                                                     selectedCampsite = null
                                                     isRegisteringCampsite = false
                                                     adminPage = null
                                                     editingProfile = false
                                                     showPolicy = false
-
-                                                    // Return to the welcome screen
                                                     showWelcome = true
                                                 },
-                                                onProfilePictureUploaded = { imageUrl ->  userDB.updateProfilePicture(currentUser, imageUrl) },
+                                                onProfilePictureUploaded = { imageId -> userDB.updateProfilePicture(currentUser, imageId) },
+                                                onProfilePictureRemoved = { userDB.updateProfilePicture(currentUser, "") },
                                                 modifier = Modifier.padding(innerPadding)
                                             )
                                         }

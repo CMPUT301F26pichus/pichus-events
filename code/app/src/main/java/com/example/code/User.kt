@@ -22,6 +22,6 @@ class User(val name: String = "",
            var phoneNum: Long = -1,
            var role: String = "",
            var deviceID: String = "",
-           var profilePictureUrl: String = ""
+           var profilePictureId: String = ""
 )
 
