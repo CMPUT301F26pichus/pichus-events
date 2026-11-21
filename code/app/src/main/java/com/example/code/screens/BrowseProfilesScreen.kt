@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -25,14 +24,10 @@ import com.example.code.components.BackButton
 import com.example.code.components.UserProfileCard
 import com.example.code.ui.theme.PichusTheme
 import androidx.compose.ui.unit.dp
-import com.example.code.Campsite
 import com.example.code.User
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
+import com.example.code.ImageDB
 
 /**
  * Allows an administrator to browse all user profiles.
@@ -42,8 +37,10 @@ import androidx.compose.material3.TextButton
 @Composable
 fun BrowseProfilesScreen(
     users: List<User>,
+    imageDB: ImageDB? = null,
     onBack: () -> Unit,
     onDeleteUser: (User) -> Unit,
+    onDeleteProfilePicture: (User) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -58,6 +55,8 @@ fun BrowseProfilesScreen(
     }
 
     var userToDelete by remember { mutableStateOf<User?>(null) }
+
+    var userPicToDelete by remember { mutableStateOf<User?>(null) }
 
     userToDelete?.let { user ->
         AlertDialog(
@@ -79,6 +78,39 @@ fun BrowseProfilesScreen(
             dismissButton = {
                 TextButton(
                     onClick = { userToDelete = null }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    userPicToDelete?.let { user ->
+        AlertDialog(
+            onDismissRequest = {
+                userPicToDelete = null
+            },
+            title = {
+                Text("Remove Profile Picture")
+            },
+            text = {
+                Text("Are you sure you want to remove ${user.name}'s profile picture?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteProfilePicture(user)
+                        userPicToDelete = null
+                    }
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        userPicToDelete = null
+                    }
                 ) {
                     Text("Cancel")
                 }
@@ -138,55 +170,15 @@ fun BrowseProfilesScreen(
                     Column {
                         UserProfileCard(
                             user = user,
+                            imageDB = imageDB,
                             onDeleteClick = {
                                 userToDelete = user
-                            }
+                            },
+                            onDeletePictureClick = { userPicToDelete = user }
                         )
                     }
                 }
             }
         }
-    }
-}
-
-// Preview of screen for reference
-@Preview(showBackground = true, backgroundColor = 0xFFF4EFE3)
-@Composable
-private fun BrowseProfilesScreenPreview() {
-    PichusTheme {
-        BrowseProfilesScreen(
-            users = listOf(
-                User(
-                    name = "Alex Johnson",
-                    userID = 1001,
-                    email = "alex@gmail.com",
-                    phoneNum = 7801234567,
-                    role = "Entrant"
-                ),
-                User(
-                    name = "Sarah Smith",
-                    userID = 1002,
-                    email = "sarah@gmail.com",
-                    phoneNum = 7802345678,
-                    role = "Campsite Owner"
-                ),
-                User(
-                    name = "Michael Brown",
-                    userID = 1003,
-                    email = "michael@gmail.com",
-                    phoneNum = 7803456789,
-                    role = "Entrant"
-                ),
-                User(
-                    name = "Emma Wilson",
-                    userID = 1004,
-                    email = "emma@gmail.com",
-                    phoneNum = 7804567890,
-                    role = "Campsite Owner"
-                )
-            ),
-            onDeleteUser = {},
-            onBack = {}
-        )
     }
 }

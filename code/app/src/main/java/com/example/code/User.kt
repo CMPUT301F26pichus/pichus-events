@@ -17,11 +17,13 @@ import android.provider.Settings
  * @property notificationsEnabled false if the user opted out of notifications (US 01.10.01)
  *
  */
-class User(val name: String = "",
-           val userID: Int = -1,
-           var email: String = "",
-           var phoneNum: Long = -1,
-           var role: String = "",
-           var deviceID: String = "",
-           var notificationsEnabled: Boolean = true)
-
+class User(
+    val name: String = "",
+    val userID: Int = -1,
+    var email: String = "",
+    var phoneNum: Long = -1,
+    var role: String = "",
+    var deviceID: String = "",
+    var notificationsEnabled: Boolean = true, 
+    var profilePictureId: String = ""
+)

@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.5")
     implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
     implementation("androidx.compose.material:material-icons-core")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0") // QR code generation
     implementation("com.github.bumptech.glide:glide:4.16.0") // converting Uri to displayable image

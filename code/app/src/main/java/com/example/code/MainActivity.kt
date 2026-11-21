@@ -52,6 +52,8 @@ class MainActivity : ComponentActivity() {
                 val campsiteDB = remember { CampsiteDB() }
                 // Connect to Firestore, listens for user profile changes
                 val userDB = remember { UserDB() }
+                // Connect to Firestore
+                val imageDB = remember { ImageDB() }
                 // Connect to Firestore, listen to waiting list changes
                 val waitingListDB = remember {WaitingListDB()}
                 // Connect to Firestore, listen for reservation changes
@@ -355,23 +357,21 @@ class MainActivity : ComponentActivity() {
                                         } else {
                                             ProfileScreen(
                                                 user = currentUser,
-                                                onEditProfile = { editingProfile = true }, // opens edit profile
+                                                imageDB = imageDB,
+                                                onEditProfile = { editingProfile = true },
                                                 onAdminTools = { adminPage = AdminPage.MENU },
                                                 onLogout = {
-                                                    // Clear the current user session
                                                     UserSession.currentUserId = -1
-
-                                                    // Reset navigation state
                                                     selectedTab = AppTab.SEARCH
                                                     selectedCampsite = null
                                                     isRegisteringCampsite = false
                                                     adminPage = null
                                                     editingProfile = false
                                                     showPolicy = false
-
-                                                    // Return to the welcome screen
                                                     showWelcome = true
                                                 },
+                                                onProfilePictureUploaded = { imageId -> userDB.updateProfilePicture(currentUser, imageId) },
+                                                onProfilePictureRemoved = { userDB.updateProfilePicture(currentUser, "") },
                                                 modifier = Modifier.padding(innerPadding)
                                             )
                                         }
@@ -389,11 +389,21 @@ class MainActivity : ComponentActivity() {
                                     AdminPage.PROFILES -> {
                                         BrowseProfilesScreen(
                                             users = userDB.users,
-                                            onBack = {
-                                                adminPage = AdminPage.MENU
-                                            },
-                                            onDeleteUser = { user ->
-                                                userDB.deleteUser(user)
+                                            imageDB = imageDB,
+                                            onBack = { adminPage = AdminPage.MENU },
+                                            onDeleteUser = { user -> userDB.deleteUser(user) },
+                                            onDeleteProfilePicture = { user ->
+                                                imageDB.deleteImage(
+                                                    id = user.profilePictureId,
+                                                    onSuccess = { userDB.updateProfilePicture(user, "") },
+                                                    onFailure = { exception ->
+                                                        android.util.Log.e(
+                                                            "BrowseProfiles",
+                                                            "Failed to delete profile picture",
+                                                            exception
+                                                        )
+                                                    }
+                                                )
                                             },
                                             modifier = Modifier.padding(innerPadding)
                                         )

@@ -1,7 +1,11 @@
 package com.example.code
 
-import android.net.Uri
+import com.google.firebase.firestore.Blob
 
-class Image(val uri: Uri? = null,
-            val id: String = "") {
-}
+data class Image(
+    val id: String = "",
+    val imageData: Blob? = null,
+    val imageType: String = "",
+    val userId: String = "",
+    val campsiteId: String = ""
+)
