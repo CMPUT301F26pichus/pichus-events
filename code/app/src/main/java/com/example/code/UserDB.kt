@@ -71,7 +71,7 @@ class UserDB {
     fun updateName(user: User, newName: String) {
         if (newName.isNotEmpty()) {
             val updatedProfile =
-                User(newName, user.userID, user.email, user.phoneNum, user.role, user.deviceID, user.profilePictureId)
+                User(newName, user.userID, user.email, user.phoneNum, user.role, user.deviceID, user.notificationsEnabled, user.profilePictureId)
             usersRef.document(user.userID.toString()).set(updatedProfile)
         }
     }
@@ -88,7 +88,7 @@ class UserDB {
     fun updateEmail(user: User, newEmail: String) {
         if (newEmail.isNotEmpty()) {
             val updatedProfile =
-                User(user.name, user.userID, newEmail, user.phoneNum, user.role, user.deviceID, user.profilePictureId)
+                User(user.name, user.userID, newEmail, user.phoneNum, user.role, user.deviceID, user.notificationsEnabled, user.profilePictureId)
             usersRef.document(user.userID.toString()).set(updatedProfile)
         }
     }
@@ -103,7 +103,7 @@ class UserDB {
      */
     fun updatePhoneNum(user: User, newNum: String) {
         if (newNum.length == 10) {
-            val updatedProfile = User(user.name, user.userID, user.email, newNum.toLong(), user.role, user.deviceID, user.profilePictureId)
+            val updatedProfile = User(user.name, user.userID, user.email, newNum.toLong(), user.role, user.deviceID, user.notificationsEnabled, user.profilePictureId)
             usersRef.document(user.userID.toString()).set(updatedProfile)
         }
     }
