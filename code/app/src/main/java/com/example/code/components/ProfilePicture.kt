@@ -27,6 +27,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import androidx.compose.foundation.Image as ComposeImage
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 
 /**
  * Allows a user to upload, display, update and remove
@@ -44,26 +47,36 @@ fun ProfilePicture(
     val scope = rememberCoroutineScope()
 
     var imageBytes by remember { mutableStateOf<ByteArray?>(null) }
+
+    val profileBitmap = remember(imageBytes) {
+        imageBytes?.let { bytes ->
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+        }
+    }
+
     var isUploading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showOptions by remember { mutableStateOf(false) }
 
     // Retrieve the existing profile picture from Firestore.
     LaunchedEffect(profilePictureId) {
-
-        imageBytes = null
-
         if (profilePictureId.isNotEmpty()) {
-
             imageDB.getImage(
                 id = profilePictureId,
                 onSuccess = { image ->
-                    imageBytes = image?.imageData?.toBytes()
+                    val retrievedBytes = image?.imageData?.toBytes()
+
+                    if (retrievedBytes != null) {
+                        imageBytes = retrievedBytes
+                        errorMessage = null
+                    }
                 },
                 onFailure = { exception ->
                     errorMessage = exception.message
                 }
             )
+        } else {
+            imageBytes = null
         }
     }
 
@@ -147,20 +160,12 @@ fun ProfilePicture(
 
                 CircularProgressIndicator()
 
-            } else if (imageBytes != null) {
+            } else if (profileBitmap != null) {
 
-                AndroidView(
-                    factory = { ctx ->
-                        ImageView(ctx).apply {
-                            scaleType = ImageView.ScaleType.CENTER_CROP
-                        }
-                    },
-                    update = { imageView ->
-                        Glide.with(imageView)
-                            .load(imageBytes)
-                            .centerCrop()
-                            .into(imageView)
-                    },
+                ComposeImage(
+                    bitmap = profileBitmap,
+                    contentDescription = "Profile picture",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
 
