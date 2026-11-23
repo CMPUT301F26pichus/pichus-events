@@ -23,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.code.components.BackButton
+import com.example.code.components.CampsiteImageCarousel
 import com.example.code.Campsite
+import com.example.code.ImageDB
 
 /**
  * Campsite details screen (US 01.01.05). Shows more info about the campsite the entrant selects:
@@ -40,6 +42,7 @@ fun CampsiteDetailsScreen(
     campsite: Campsite, // Campsite to show
     onBack: () -> Unit, // For back arrow option
     modifier: Modifier = Modifier,
+    imageDB: ImageDB? = null,
     isOnWaitingList: Boolean = false,
     isWaitlistOpen: Boolean,
     onJoinLottery: () -> Boolean = {true},
@@ -67,6 +70,8 @@ fun CampsiteDetailsScreen(
 
         Text(text = campsite.name.uppercase(), style = MaterialTheme.typography.titleLarge)
         Text(text = campsite.locationName, style = MaterialTheme.typography.bodyMedium)
+        if (imageDB != null) CampsiteImageCarousel(campsiteId = campsite.id, imageDB = imageDB)
+
         Text(text = "★ ${campsite.rating}", style = MaterialTheme.typography.bodyLarge)
         Text(text = "Max Occupancy: ${campsite.occupancy}", style = MaterialTheme.typography.bodyLarge)
         Text(text = "Price: $${"%.2f".format(campsite.price)} / night", style = MaterialTheme.typography.bodyLarge)

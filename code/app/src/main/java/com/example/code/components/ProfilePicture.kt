@@ -18,15 +18,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Image as ComposeImage
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import com.example.code.Image
 import com.example.code.ImageDB
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import androidx.compose.foundation.Image as ComposeImage
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
+import com.example.code.components.ImageUtils
 
 /**
  * Allows a user to upload, display, update and remove
@@ -93,7 +94,7 @@ fun ProfilePicture(
 
                     // Compress image in the background.
                     val compressedBytes = withContext(Dispatchers.IO) {
-                        compressImage(context, uri)
+                        ImageUtils.compressImage(context, uri)
                     }
 
                     // Use a predictable ID so each user has one profile picture.

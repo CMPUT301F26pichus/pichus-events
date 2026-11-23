@@ -48,21 +48,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PichusTheme {
-                // Connects to Firestore, keeps watching for campsite changes
+                // Connects to Firestore, keeps watching for changes
                 val campsiteDB = remember { CampsiteDB() }
-                // Connect to Firestore, listens for user profile changes
                 val userDB = remember { UserDB() }
-                // Connect to Firestore
                 val imageDB = remember { ImageDB() }
-                // Connect to Firestore, listen to waiting list changes
                 val waitingListDB = remember {WaitingListDB()}
-                // Connect to Firestore, listen for reservation changes
                 val reservationDB = remember {ReservationDB()}
-                // Connect to Firestore, listen for lottery changes
                 val lotteryDB = remember { LotteryDB() }
                 val notificationService = remember { NotificationService(NotificationDB(), userDB) }
                 val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
-                //Track resrvations
+                //Track reservations
                 var selectedReservationId by remember { mutableStateOf<String?>(null) }
 
                 // Remember which bottom navigation tab is selected
@@ -188,6 +183,7 @@ class MainActivity : ComponentActivity() {
                                 if (isRegisteringCampsite) {
                                     RegisterCampsiteScreen(
                                         currentUserId = UserSession.currentUserId,
+                                        imageDB = imageDB,
                                         onCampsiteRegistered = { newCampsite ->
                                             campsiteDB.addCampsite(newCampsite)
                                             isRegisteringCampsite = false
@@ -198,6 +194,7 @@ class MainActivity : ComponentActivity() {
                                 } else if (isUpdatingCampsite && selectedCampsite != null) {
                                     UpdateCampsiteScreen(
                                         campsite = selectedCampsite!!,
+                                        imageDB = imageDB,
                                         onCampsiteUpdated = { updatedCampsite ->
                                             campsiteDB.addCampsite(updatedCampsite)
                                             isUpdatingCampsite = false
@@ -268,6 +265,7 @@ class MainActivity : ComponentActivity() {
                                             campsite = selectedCampsite!!,
                                             onBack = { selectedCampsite = null },
                                             isOnWaitingList = isOnWaitingList,
+                                            imageDB = imageDB,
                                             isWaitlistOpen=isWaitlistOpen,
                                             onJoinLottery = {
                                                 waitingListDB.joinWaitingList(
@@ -283,8 +281,30 @@ class MainActivity : ComponentActivity() {
                                             },
                                             isAdmin = currentUser.role.equals("Admin", ignoreCase = true),
                                             onDeleteCampsite = {
-                                                campsiteDB.deleteCampsite(campsite)
-                                                selectedCampsite = null
+                                                imageDB.deleteCampsiteImages( // delete all images belonging to this campsite
+                                                    campsiteId = campsite.id,
+                                                    onSuccess = {
+                                                        campsiteDB.deleteCampsite(
+                                                            campsite = campsite,
+                                                            onSuccess = { selectedCampsite = null },
+                                                            onFailure = { exception ->
+                                                                android.util.Log.e(
+                                                                    "MainActivity",
+                                                                    "Failed to delete campsite",
+                                                                    exception
+                                                                )
+                                                            }
+                                                        )
+                                                    },
+
+                                                    onFailure = { exception ->
+                                                        android.util.Log.e(
+                                                            "MainActivity",
+                                                            "Failed to delete campsite images",
+                                                            exception
+                                                        )
+                                                    }
+                                                )
                                             },
                                             modifier = Modifier.padding(innerPadding)
                                         )

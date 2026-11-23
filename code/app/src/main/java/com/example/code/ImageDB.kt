@@ -20,7 +20,6 @@ import com.google.firebase.firestore.Blob
 class ImageDB {
     private val db = Firebase.firestore
     private val imagesRef = db.collection("images")
-
     private val _images = mutableStateListOf<Image>()
 
     /**
@@ -94,7 +93,36 @@ class ImageDB {
             }
     }
 
+    /**
+     * Deletes all images associated with a campsite.
+     */
+    fun deleteCampsiteImages(
+        campsiteId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        imagesRef
+            .whereEqualTo("campsiteId", campsiteId)
+            .get()
+            .addOnSuccessListener { documents ->
 
+                val batch = db.batch()
+
+                for (document in documents.documents) {
+                    batch.delete(document.reference)
+                }
+                batch.commit()
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }
+                    .addOnFailureListener { exception ->
+                        onFailure(exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 
     /**
      * Obtains a user's profile picture or a campsite image from the database
