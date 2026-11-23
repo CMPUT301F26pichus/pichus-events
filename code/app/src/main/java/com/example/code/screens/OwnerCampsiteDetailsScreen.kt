@@ -28,6 +28,8 @@ import com.example.code.Campsite
 import com.example.code.Reservation
 import com.example.code.User
 import com.example.code.WaitingList
+import com.example.code.ImageDB
+import com.example.code.components.CampsiteImageCarousel
 import com.example.code.components.BackButton
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.DarkBrown

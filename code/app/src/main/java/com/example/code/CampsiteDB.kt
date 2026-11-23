@@ -38,8 +38,19 @@ class CampsiteDB {
      * @param campsite campsite to be deleted
      * @return Unit
      */
-    fun deleteCampsite(campsite: Campsite) {
-        campsitesRef.document(campsite.id).delete()
+    fun deleteCampsite(
+        campsite: Campsite,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        campsitesRef.document(campsite.id)
+            .delete()
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
 
     /**
