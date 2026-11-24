@@ -114,9 +114,14 @@ fun OwnerCampsiteDetailsScreen(
                 if (campsite.price > 0) {
                     DetailRow(label = "Price", value = "$${"%.2f".format(campsite.price)} / night")
                 }
-                if (campsite.rating > 0) {
-                    DetailRow(label = "Rating", value = "★ ${campsite.rating}")
-                }
+                DetailRow(
+                    label = "Rating",
+                    value = if (campsite.rating <= 0.0) {
+                        "No ratings yet"
+                    } else {
+                        "★ ${"%.1f".format(campsite.rating)}"
+                    }
+                )
                 DetailRow(label = "Description / Rules", value = campsite.policy.ifBlank { "None" })
             }
         }

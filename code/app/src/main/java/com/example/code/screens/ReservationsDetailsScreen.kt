@@ -1,6 +1,8 @@
 package com.example.code.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
@@ -32,6 +34,8 @@ fun ReservationDetailsScreen(
     onBack: () -> Unit,
     onCancelReservation: () -> Unit,
     onRate: (Int)->Unit,
+    existingReview: String? = null,
+    onPostReview: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -54,7 +58,8 @@ fun ReservationDetailsScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = "Location: ${campsite.locationName}")
@@ -82,7 +87,7 @@ fun ReservationDetailsScreen(
                 // past reservation.
                 // only show the rating UI if the user is entrant
                 if (userRole == "Entrant") {
-                    Spacer(modifier = Modifier.weight(1f))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                     var currentRating by remember { mutableIntStateOf(reservation.rating) }
                     var hasRated by remember { mutableStateOf(reservation.rating > 0) }
@@ -116,6 +121,41 @@ fun ReservationDetailsScreen(
                         enabled = currentRating > 0 && !hasRated
                     ) {
                         Text(if (hasRated) "RATED!" else "LEAVE RATING!")
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    var reviewText by remember(existingReview) {
+                        mutableStateOf(existingReview ?: "")
+                    }
+                    var hasReviewed by remember(existingReview) {
+                        mutableStateOf(!existingReview.isNullOrBlank())
+                    }
+
+                    Text(
+                        text = "Write a Review",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    OutlinedTextField(
+                        value = reviewText,
+                        onValueChange = { reviewText = it },
+                        label = { Text("Share your experience...") },
+                        enabled = !hasReviewed,
+                        minLines = 3,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Button(
+                        onClick = {
+                            onPostReview(reviewText.trim())
+                            hasReviewed = true
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        enabled = reviewText.isNotBlank() && !hasReviewed
+                    ) {
+                        Text(if (hasReviewed) "REVIEW POSTED!" else "POST REVIEW")
                     }
                 } else if (userRole.equals("Campsite Owner", ignoreCase = true)) {
                     // placeholder for owner reservation info veiw (US 02.08.01, US 02.11.01)
