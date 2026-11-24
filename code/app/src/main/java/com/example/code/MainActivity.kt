@@ -314,6 +314,7 @@ class MainActivity : ComponentActivity() {
                                             },
                                             reviews = reviewDB.getCampsiteReviews(campsite),
                                             users = userDB.users,
+                                            reservations = reservationDB.reservations.filter { it.campsiteID == campsite.id },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }

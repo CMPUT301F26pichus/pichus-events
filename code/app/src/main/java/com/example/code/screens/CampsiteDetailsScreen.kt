@@ -32,6 +32,7 @@ import com.example.code.components.BackButton
 import com.example.code.components.CampsiteImageCarousel
 import com.example.code.Campsite
 import com.example.code.ImageDB
+import com.example.code.Reservation
 import com.example.code.Review
 import com.example.code.User
 
@@ -58,8 +59,8 @@ fun CampsiteDetailsScreen(
     isAdmin: Boolean = false,
     onDeleteCampsite: () -> Unit = {},
     reviews: List<Review> = emptyList(),
-    users: List<User> = emptyList()
-
+    users: List<User> = emptyList(),
+    reservations: List<Reservation> = emptyList()
 ) {
     var errorMessage by remember(campsite.id, isOnWaitingList) {mutableStateOf<String?>(null)}
 
@@ -189,6 +190,9 @@ fun CampsiteDetailsScreen(
                     ?.name
                     ?.ifBlank { null }
                     ?: "Camper #${review.reviewerID}"
+                val reviewerRating = reservations
+                    .find { it.customerID == review.reviewerID && it.rating > 0 }
+                    ?.rating
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -206,6 +210,13 @@ fun CampsiteDetailsScreen(
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.SemiBold
                         )
+                        if (reviewerRating != null) {
+                            Text(
+                                text = "★".repeat(reviewerRating) + "☆".repeat(5 - reviewerRating),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         Text(
                             text = review.content,
                             style = MaterialTheme.typography.bodyMedium
