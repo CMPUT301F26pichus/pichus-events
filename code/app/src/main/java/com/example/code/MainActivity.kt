@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
                 val imageDB = remember { ImageDB() }
                 val waitingListDB = remember {WaitingListDB()}
                 val reservationDB = remember {ReservationDB()}
+                val reviewDB = remember { ReviewDB() }
                 val lotteryDB = remember { LotteryDB() }
                 val notificationService = remember { NotificationService(NotificationDB(), userDB) }
                 val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
@@ -311,6 +312,8 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 )
                                             },
+                                            reviews = reviewDB.getCampsiteReviews(campsite),
+                                            users = userDB.users,
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
@@ -328,6 +331,11 @@ class MainActivity : ComponentActivity() {
                                     val campsite = campsiteDB.campsites.find { it.id == selectedReservationId }
 
                                     if (reservation != null && campsite != null) {
+                                        val existingReview = reviewDB
+                                            .getCampsiteReviews(campsite)
+                                            .find { it.reviewerID == UserSession.currentUserId }
+                                            ?.content
+
                                         ReservationDetailsScreen(
                                             reservation = reservation,
                                             campsite = campsite,
@@ -339,6 +347,29 @@ class MainActivity : ComponentActivity() {
                                             },
                                             onRate = { selectedRating ->
                                                 reservationDB.rateReservation(reservation, selectedRating)
+
+                                                // Recalculate average rating from all rated reservations for this campsite
+                                                val otherRatings = reservationDB.reservations
+                                                    .filter {
+                                                        it.campsiteID == campsite.id &&
+                                                                it.customerID != reservation.customerID &&
+                                                                it.rating > 0
+                                                    }
+                                                    .map { it.rating }
+
+                                                val allRatings = otherRatings + selectedRating
+                                                val averageRating = Math.round(allRatings.average() * 10.0) / 10.0
+                                                campsiteDB.updateRating(campsite.id, averageRating)
+                                            },
+                                            existingReview = existingReview,
+                                            onPostReview = { content ->
+                                                reviewDB.addReview(
+                                                    Review(
+                                                        campsiteID = campsite.id,
+                                                        reviewerID = UserSession.currentUserId,
+                                                        content = content
+                                                    )
+                                                )
                                             },
                                             modifier = Modifier.padding(innerPadding)
                                         )

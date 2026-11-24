@@ -131,6 +131,16 @@ class CampsiteDB {
     }
 
     /**
+     * Updates a campsite's average rating in the database
+     *
+     * @param campsiteId ID of the campsite to update
+     * @param newRating calculated average rating
+     */
+    fun updateRating(campsiteId: String, newRating: Double) {
+        campsitesRef.document(campsiteId).update("rating", newRating)
+    }
+
+    /**
      * Obtains an owner's own campsites
      *
      * @param owner used to only return a specific owner's own campsites

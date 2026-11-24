@@ -63,7 +63,11 @@ fun CampsiteCard(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "★ ${campsite.rating}",
+                    text = if (campsite.rating <= 0.0) {
+                        "No ratings yet"
+                    } else {
+                        "★ ${"%.1f".format(campsite.rating)}"
+                    },
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
