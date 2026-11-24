@@ -209,20 +209,25 @@ class MainActivity : ComponentActivity() {
                                         existingWaitlist = waitingListDB.getWaitingList(selectedCampsite!!.id),
                                         onSaveWaitlist = { waitlist ->
                                             waitingListDB.addWaitingList(waitlist)
-                                            // One lottery per campsite for now, ID = campsite ID. Never reopen a drawn one.
+                                            // One lottery per campsite for now, ID = campsite ID.
                                             val existing = lotteryDB.viewOwnLotteries(currentUser).find { it.lotteryID == waitlist.campsiteID }
-                                            if (existing?.status != LotteryStatus.COMPLETE) {
-                                                lotteryDB.addLottery(
+                                            when {
+                                                existing == null -> lotteryDB.addLottery(
                                                     Lottery(
                                                         lotteryID = waitlist.campsiteID,
                                                         ownerID = currentUser.userID,
                                                         campsiteIDs = listOf(waitlist.campsiteID),
-                                                        registrationStart = existing?.registrationStart ?: Timestamp.now(),
                                                         registrationEnd = waitlist.registrationDeadline ?: Timestamp.now(),
-                                                        numWinners = existing?.numWinners ?: 1,
                                                         waitingList = waitlist
                                                     )
                                                 )
+                                                // US 02.04.06: edit the existing listing, keep every field the owner did not change.
+                                                existing.status != LotteryStatus.COMPLETE -> {
+                                                    existing.registrationEnd = waitlist.registrationDeadline ?: existing.registrationEnd
+                                                    existing.waitingList = waitlist
+                                                    lotteryDB.updateLottery(existing)
+                                                }
+                                                // A drawn lottery is never reopened.
                                             }
                                             isCreatingWaitlist = false
                                         },
