@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -12,6 +13,9 @@ import androidx.compose.ui.unit.dp
 import com.example.code.ImageDB
 import com.example.code.User
 import com.example.code.components.ProfilePicture
+import com.example.code.ui.theme.ButtonCream
+import com.example.code.ui.theme.DeepSage
+import androidx.compose.material3.ButtonDefaults
 
 /**
  * Profile screen. Displays the current user's profile information.
@@ -37,7 +41,7 @@ fun ProfileScreen(
     ) {
 
         Text(
-            text = "Account",
+            text = "ACCOUNT",
             style = MaterialTheme.typography.titleLarge
         )
 
@@ -69,7 +73,7 @@ fun ProfileScreen(
 
                 Spacer(Modifier.size(8.dp))
 
-                Text("Edit Profile")
+                Text("EDIT PROFILE")
             }
 
         } else {
@@ -88,15 +92,19 @@ fun ProfileScreen(
                 onClick = onAdminTools,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Admin Tools")
+                Text("ADMIN TOOLS")
             }
         }
 
         Button(
             onClick = onLogout,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = DeepSage,
+                contentColor = ButtonCream
+            )
         ) {
-            Text("Log Out")
+            Text("LOG OUT")
         }
     }
 }

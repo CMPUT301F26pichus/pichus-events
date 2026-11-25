@@ -1,5 +1,6 @@
 package com.example.code.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -86,6 +87,7 @@ fun WelcomeScreen(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             ),
+            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline), // Outline the button so stands out from background
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("POLICY AND GUIDELINES")

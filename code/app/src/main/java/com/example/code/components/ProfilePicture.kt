@@ -213,7 +213,7 @@ fun ProfilePicture(
                     ) {
                         Text(
                             if (imageBytes != null) "Change Picture"
-                            else "Upload Picture"
+                            else "UPLOAD"
                         )
                     }
                 },
@@ -248,7 +248,7 @@ fun ProfilePicture(
                                     )
                                 }
                             ) {
-                                Text("Remove")
+                                Text("REMOVE")
                             }
                         }
 
@@ -257,7 +257,7 @@ fun ProfilePicture(
                                 showOptions = false
                             }
                         ) {
-                            Text("Cancel")
+                            Text("CANCEL")
                         }
                     }
                 }

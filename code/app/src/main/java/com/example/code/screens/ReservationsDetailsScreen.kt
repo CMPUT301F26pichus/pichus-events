@@ -72,7 +72,9 @@ fun ReservationDetailsScreen(
                 Button(
                     onClick = onCancelReservation,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary)
                 ) {
                     Text("CANCEL RESERVATION")
                 }
@@ -164,7 +166,9 @@ fun ReservationDetailsScreen(
                     Button(
                         onClick = { /* reject */ },
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary)
                     ) {
                         Text("REJECT")
                     }

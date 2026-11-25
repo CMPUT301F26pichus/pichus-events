@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import com.example.code.ui.theme.DeepSage
 
 /**
  * Owner home screen. Owners can view all their campsites (US 02.03.01) and register new ones (US 02.01.01).
@@ -80,8 +81,8 @@ fun OwnerHomeScreen(
             onClick = onRegisterClick,
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF403B36),
-                contentColor = Color.White
+                containerColor = DeepSage,
+                contentColor = MaterialTheme.colorScheme.onTertiary
             ),
             modifier = Modifier
                 .padding(bottom = 16.dp)
@@ -92,7 +93,7 @@ fun OwnerHomeScreen(
             )
         ) {
             Text(
-                text = "Register New",
+                text = "REGISTER NEW",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )

@@ -3,6 +3,7 @@ package com.example.code.ui.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 /**
  * Pichus app theme. Maps Project Part 2's design system onto material 3 color roles.
@@ -16,7 +17,7 @@ import androidx.compose.runtime.Composable
  */
 private val PichusColorScheme = lightColorScheme(
     primary = PichusGreen, // main positive buttons & actions
-    onPrimary = ButtonCream, // text on green buttons
+    onPrimary = OliveText, // text on green buttons
     secondary = GreenDark, // deeper green accents
     onSecondary = ButtonCream,
     tertiary = DarkBrown, // back-out/negative action buttons
@@ -26,10 +27,11 @@ private val PichusColorScheme = lightColorScheme(
     surface = CreamBg, // screens
     onSurface = DarkBrown,
     surfaceVariant = SageCard, // cards and list items
+    outlineVariant = SageCard, // divider line
     onSurfaceVariant = DarkBrown,
     secondaryContainer = BeigePill, // pills, tabs, input fields
     onSecondaryContainer = PillText,
-    outline = MutedBrown, // borders or secondary text
+    outline = GreenDark, // borders/outline (around beige pills)
     error = PichusRed, // irreversible destructive actions
     onError = ButtonCream // text on red buttons
 

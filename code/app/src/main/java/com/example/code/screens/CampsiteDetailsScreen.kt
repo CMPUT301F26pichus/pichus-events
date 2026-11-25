@@ -1,6 +1,7 @@
 package com.example.code.screens
 
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -105,7 +107,8 @@ fun CampsiteDetailsScreen(
                 onClick = { showDeleteConfirmation = true },
                 modifier = Modifier.fillMaxWidth(),
                 colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
                 )
             ) {
                 Text("REMOVE CAMPSITE")
@@ -115,7 +118,8 @@ fun CampsiteDetailsScreen(
                 // shows joined if entrant is alr on the waiting list
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = MaterialTheme.colorScheme.secondaryContainer
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Text(
                         text = "JOINED",
@@ -129,6 +133,11 @@ fun CampsiteDetailsScreen(
                         errorMessage = null
                         onLeaveWaitlist()
                     },
+                    // Make dark brown
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("LEAVE WAITLIST")
@@ -240,14 +249,20 @@ fun CampsiteDetailsScreen(
                         onDeleteCampsite()
                     },
                     colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
                     Text("REMOVE")
                 }
             },
             dismissButton = {
-                Button( onClick = { showDeleteConfirmation = false } ) {
+                TextButton(
+                    onClick = { showDeleteConfirmation = false },
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
                     Text("CANCEL")
                 }
             }

@@ -98,16 +98,28 @@ fun EditProfileScreen (
             title = { Text("Delete Account?")},
             text = { Text("This permanently deletes your profile.") },
             confirmButton = {
-                TextButton(onClick = {
-                    userDB.deleteUser(user)
-                    showDeleteDialog = false
-                    onDeleted()
-                }) { Text("DELETE")
-                   }
+                // red to match the DELETE ACCOUNT button
+                Button(
+                    onClick = {
+                        userDB.deleteUser(user)
+                        showDeleteDialog = false
+                        onDeleted()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text("DELETE")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false })
-                { Text("CANCEL")}
+                TextButton(
+                    onClick = { showDeleteDialog = false },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                ) {
+                    Text("CANCEL")
+                }
             }
         )
     }

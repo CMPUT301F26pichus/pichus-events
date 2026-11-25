@@ -26,6 +26,8 @@ import com.example.code.ui.theme.PichusTheme
 import androidx.compose.ui.unit.dp
 import com.example.code.User
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.TextButton
 import com.example.code.ImageDB
 
@@ -66,20 +68,28 @@ fun BrowseProfilesScreen(
                 Text("Are you sure you want to delete ${user.name}?")
             },
             confirmButton = {
-                TextButton(
+                // red to match the delete (trash) icon
+                Button(
                     onClick = {
                         onDeleteUser(user)
                         userToDelete = null
-                    }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
                 ) {
-                    Text("Delete")
+                    Text("DELETE")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = { userToDelete = null }
+                    onClick = { userToDelete = null },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
-                    Text("Cancel")
+                    Text("CANCEL")
                 }
             }
         )
@@ -97,22 +107,28 @@ fun BrowseProfilesScreen(
                 Text("Are you sure you want to remove ${user.name}'s profile picture?")
             },
             confirmButton = {
-                TextButton(
+                // red to match the delete (trash) icon
+                Button(
                     onClick = {
-                        onDeleteProfilePicture(user)
-                        userPicToDelete = null
-                    }
+                        onDeleteUser(user)
+                        userToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
                 ) {
-                    Text("Remove")
+                    Text("DELETE")
                 }
             },
             dismissButton = {
                 TextButton(
-                    onClick = {
-                        userPicToDelete = null
-                    }
+                    onClick = { userToDelete = null },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
-                    Text("Cancel")
+                    Text("CANCEL")
                 }
             }
         )
@@ -128,7 +144,7 @@ fun BrowseProfilesScreen(
             modifier = Modifier.align(Alignment.Start)
         )
         Text(
-            text = "Browse Profiles",
+            text = "BROWSE PROFILES",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(vertical = 16.dp)
         )

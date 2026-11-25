@@ -33,7 +33,10 @@ import com.example.code.components.CampsiteImageCarousel
 import com.example.code.components.BackButton
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.DarkBrown
+import com.example.code.ui.theme.DeepSage
+import com.example.code.ui.theme.PichusGreen
 import com.example.code.ui.theme.PichusTheme
+import com.example.code.ui.theme.SageCard
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -79,8 +82,8 @@ fun OwnerCampsiteDetailsScreen(
             onClick = onUpdateClick,
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = DarkBrown,
-                contentColor = MaterialTheme.colorScheme.onTertiary
+                containerColor = PichusGreen,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -173,13 +176,13 @@ fun OwnerCampsiteDetailsScreen(
                     onClick = onCreateWaitlistClick,
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = DarkBrown,
+                        containerColor = DeepSage,
                         contentColor = MaterialTheme.colorScheme.onTertiary
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (waitingList == null) "Create Lottery" else "Edit Lottery",
+                        text = if (waitingList == null) "CREATE LOTTERY" else "EDIT LOTTERY",
                         fontWeight = FontWeight.Bold
                     )
                 }

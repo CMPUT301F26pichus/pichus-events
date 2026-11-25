@@ -54,6 +54,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.code.ui.theme.DeepSage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -256,7 +257,7 @@ fun RegisterCampsiteScreen(
             enabled = !isUploading, // Prevent multiple submissions while uploading
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = DarkBrown,
+                containerColor = DeepSage,
                 contentColor = MaterialTheme.colorScheme.onTertiary
             ),
             modifier = Modifier
@@ -265,7 +266,7 @@ fun RegisterCampsiteScreen(
                 .height(48.dp)
         ) {
             Text(
-                text = if (isUploading) "Uploading Images..." else "Register Campsite",
+                text = if (isUploading) "Uploading Images..." else "REGISTER CAMPSITE",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -298,8 +299,8 @@ private fun CampsitePillTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent
+            focusedBorderColor = MaterialTheme.colorScheme.outline,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline
         ),
         keyboardOptions = keyboardOptions,
         modifier = modifier.fillMaxWidth()
