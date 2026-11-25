@@ -7,6 +7,8 @@ import com.google.firebase.firestore.Exclude
  * The waiting list for one campsite.
  * Entrant IDs are stored in join order. A null capacity means no limit.
  *
+ * Outstanding Issues: N/A
+ *
  * @property campsiteID ID of the campsite this list belongs to (same as Campsite.id)
  * @property entrantIDs entrants on the list, in join order
  * @property capacity max entrants allowed, null means no limit

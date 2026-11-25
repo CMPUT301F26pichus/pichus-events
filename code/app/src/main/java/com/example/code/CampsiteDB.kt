@@ -7,6 +7,7 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores all campsites in FireBase, and allows retrieval, update and addition functionalities
  *
+ * Outstanding Issues: N/A
  */
 class CampsiteDB {
     private val db = Firebase.firestore

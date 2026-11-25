@@ -8,6 +8,7 @@ import com.google.firebase.Timestamp
  *
  * A reservation has a campsiteID, and a list of available dates.
  *
+ * Outstanding Issues: N/A
  * @property campsiteID ID of the associated campsite
  * @property dates list of available dates
  */

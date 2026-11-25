@@ -8,6 +8,7 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores all campsite availabilities in FireBase, and allows retrieval, update and addition functionalities
  *
+ * Outstanding Issues: N/A
  */
 class AvailabilityDB {
     private val db = Firebase.firestore

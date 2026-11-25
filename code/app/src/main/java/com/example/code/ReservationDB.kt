@@ -8,6 +8,8 @@ import com.google.firebase.firestore.firestore
 
 /**
  * Stores all reservations in FireBase, and allows retrieval, update and addition functionalities
+ *
+ * Outstanding Issues: N/A
  */
 class ReservationDB {
     private val db = Firebase.firestore

@@ -1,12 +1,12 @@
 package com.example.code
 
-import android.annotation.SuppressLint
-import android.provider.Settings
 
 /**
  * Represents all users (admin, entrants, campsite owner) that use the campsite booking app
  *
  * A user has a name, user ID, email, phone number and role.
+ *
+ * Outstanding Issues: N/A
  *
  * @property name the name of the user
  * @property userID used to connect the user to other classes (ex. reservations, campsites, messages, etc.)
