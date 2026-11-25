@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
                 val waitingListDB = remember {WaitingListDB()}
                 val reservationDB = remember {ReservationDB()}
                 val reviewDB = remember { ReviewDB() }
+                val availabilityDB = remember {AvailabilityDB()}
                 val lotteryDB = remember { LotteryDB() }
                 val notificationService = remember { NotificationService(NotificationDB(), userDB) }
                 val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
@@ -246,6 +247,8 @@ class MainActivity : ComponentActivity() {
                                     } else {
                                         BrowseScreen(
                                             campsites = campsiteDB.campsites,
+                                            availabilities = availabilityDB.availabilities,
+                                            reservations = reservationDB.reservations,
                                             onCampsiteClick = { selectedCampsite = it },
                                             modifier = Modifier.padding(innerPadding)
                                         )
