@@ -55,37 +55,14 @@ fun AdminToolsScreen(
         AdminToolCard(
             title = "Browse Profiles",
             description = "View entrant, campsite owner, and admin profiles.",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.People,
-                    contentDescription = null
-                )
-            },
+            icon = { Icon(imageVector = Icons.Default.People, contentDescription = null) },
             onClick = onBrowseProfiles
         )
         AdminToolCard(
             title = "Browse Images",
             description = "View and manage images uploaded to campsites.",
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Image,
-                    contentDescription = null
-                )
-            },
+            icon = { Icon(imageVector = Icons.Default.Image, contentDescription = null) },
             onClick = onBrowseImages
-        )
-    }
-}
-
-// Preview of screen for reference
-@Preview(showBackground = true, backgroundColor = 0xFFF4EFE3)
-@Composable
-private fun AdminToolsScreenPreview() {
-    PichusTheme {
-        AdminToolsScreen(
-            onBrowseProfiles = {},
-            onBrowseImages = {},
-            onBack = {}
         )
     }
 }

@@ -18,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import com.example.code.components.BackButton
 import com.example.code.components.UserProfileCard
@@ -107,11 +106,10 @@ fun BrowseProfilesScreen(
                 Text("Are you sure you want to remove ${user.name}'s profile picture?")
             },
             confirmButton = {
-                // red to match the delete (trash) icon
-                Button(
+                TextButton(
                     onClick = {
-                        onDeleteUser(user)
-                        userToDelete = null
+                        onDeleteProfilePicture(user)
+                        userPicToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
@@ -123,12 +121,11 @@ fun BrowseProfilesScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { userToDelete = null },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    onClick = {
+                        userPicToDelete = null
+                    }
                 ) {
-                    Text("CANCEL")
+                    Text("Cancel")
                 }
             }
         )
@@ -187,9 +184,7 @@ fun BrowseProfilesScreen(
                         UserProfileCard(
                             user = user,
                             imageDB = imageDB,
-                            onDeleteClick = {
-                                userToDelete = user
-                            },
+                            onDeleteClick = { userToDelete = user },
                             onDeletePictureClick = { userPicToDelete = user }
                         )
                     }

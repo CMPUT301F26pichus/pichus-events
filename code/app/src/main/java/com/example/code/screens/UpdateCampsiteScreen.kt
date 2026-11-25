@@ -4,9 +4,7 @@ import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -60,6 +58,14 @@ import com.example.code.ui.theme.DeepSage
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Surface
 
 /**
  * US 02.01.03: As a campsite owner, I want to update details about my campsite.
@@ -81,6 +87,7 @@ fun UpdateCampsiteScreen(
     var occupancyText by rememberSaveable { mutableStateOf(if (campsite.occupancy > 0) campsite.occupancy.toString() else "") }
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val removedImageIds = remember { mutableStateListOf<String>() }
+    var isSelectingImagesToRemove by rememberSaveable { mutableStateOf(false) }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var isSaving by rememberSaveable { mutableStateOf(false) }
 
@@ -141,103 +148,237 @@ fun UpdateCampsiteScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
-
-        // Existing campsite images
+        // Images section
         Text(
-            text = "CURRENT IMAGES",
+            text = "IMAGES",
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.align(Alignment.Start).padding(top = 8.dp)
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(top = 8.dp)
         )
 
-        if (existingImages.isEmpty()) {
-            Text(text = "This campsite does not have any images yet.", style = MaterialTheme.typography.bodyMedium)
+        // Hide existing images that have been selected for removal.
+        val visibleExistingImages = existingImages.filter { image ->
+            image.id !in removedImageIds
+        }
+
+        // Display existing images AND newly selected images.
+        val totalVisibleImages = visibleExistingImages.size + selectedImageUris.size
+
+        if (totalVisibleImages == 0) {
+            Text(
+                text = "No images uploaded yet.",
+                style = MaterialTheme.typography.bodyMedium
+            )
         } else {
-            existingImages.forEachIndexed { index, image ->
-                // Convert the Firestore Blob into a Bitmap.
-                val bitmap = remember(image.id, image.imageData) {
-                    image.imageData?.toBytes()?.let { bytes ->
-                        BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap()
+            val rows = (totalVisibleImages + 2) / 3
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height((rows * 113 - 8).dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                userScrollEnabled = false
+            ) {
+
+                // Existing images from Firestore
+                items(
+                    items = visibleExistingImages,
+                    key = { it.id }
+                ) { image ->
+
+                    val bitmap = remember(image.id, image.imageData) {
+                        image.imageData?.toBytes()?.let { bytes ->
+                            BitmapFactory.decodeByteArray(
+                                bytes,
+                                0,
+                                bytes.size
+                            )?.asImageBitmap()
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(105.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .then(
+                                if (isSelectingImagesToRemove) {
+                                    Modifier.clickable {
+                                        removedImageIds.add(image.id)
+                                    }
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        if (bitmap != null) {
+                            Image(
+                                bitmap = bitmap,
+                                contentDescription = "Campsite image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = "Image unavailable",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
                     }
                 }
 
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                // Newly selected images from the device gallery
+                items(
+                    items = selectedImageUris,
+                    key = { "new_$it" }
+                ) { uri ->
 
-                    // Image thumbnail
-                    if (bitmap != null) {
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = "Campsite image ${index + 1}",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(150.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                        )
-                    } else {
-                        Text(text = "Unable to display image ${index + 1}", modifier = Modifier.padding(16.dp))
+                    val bitmap = remember(uri) {
+                        context.contentResolver.openInputStream(uri)?.use { stream ->
+                            BitmapFactory.decodeStream(stream)?.asImageBitmap()
+                        }
                     }
 
-                    // Remove / undo button
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-                        horizontalArrangement = Arrangement.End
+                    Box(
+                        modifier = Modifier
+                            .size(105.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(
+                                width = 2.dp,
+                                color = DeepSage,
+                                shape = RoundedCornerShape(10.dp)
+                            )
                     ) {
-                        if (image.id in removedImageIds) {
-                            Button(onClick = { removedImageIds.remove(image.id) }) {
-                                Text("UNDO")
-                            }
+                        if (bitmap != null) {
+                            Image(
+                                bitmap = bitmap,
+                                contentDescription = "New campsite image",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         } else {
-                            Button(
-                                onClick = { removedImageIds.add(image.id) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiary)
-                            ) {
-                                Text("REMOVE")
-                            }
+                            Text(
+                                text = "Preview unavailable",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
                         }
+
+                        Text(
+                            text = "NEW",
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .background(
+                                    DeepSage,
+                                    RoundedCornerShape(
+                                        topStart = 8.dp,
+                                        bottomEnd = 8.dp
+                                    )
+                                )
+                                .padding(horizontal = 6.dp, vertical = 3.dp)
+                        )
                     }
                 }
             }
         }
 
-        Text(
-            text = "${existingImages.size - removedImageIds.size} existing image(s) will be kept.",
-            style = MaterialTheme.typography.bodySmall
-        )
+        // Remove or undo image removal
+        if (existingImages.isNotEmpty()) {
+            Button(
+                onClick = {
+                    if (isSelectingImagesToRemove) {
+                        // Cancel selection and restore hidden images.
+                        isSelectingImagesToRemove = false
+                        removedImageIds.clear()
+                    } else if (removedImageIds.isNotEmpty()) {
+                        // Undo images previously selected for removal.
+                        removedImageIds.clear()
+                    } else {
+                        // Enter image removal mode.
+                        isSelectingImagesToRemove = true
+                    }
+                },
+                enabled = !isSaving,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    when {
+                        isSelectingImagesToRemove -> "CANCEL REMOVE"
+                        removedImageIds.isNotEmpty() -> "UNDO REMOVALS"
+                        else -> "REMOVE IMAGES"
+                    }
+                )
+            }
+        }
 
+    // Finish selecting images for removal.
+        if (isSelectingImagesToRemove) {
+            Text(
+                text = "${removedImageIds.size} image(s) selected for removal.",
+                style = MaterialTheme.typography.bodySmall
+            )
 
-        Text(text = "${existingImages.size - removedImageIds.size} existing image(s) will be kept.", style = MaterialTheme.typography.bodySmall)
+            Button(
+                onClick = {
+                    isSelectingImagesToRemove = false
+                },
+                enabled = removedImageIds.isNotEmpty() && !isSaving,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("DONE")
+            }
+        }
 
-        // Add new images
-        Text(
-            text = "ADD NEW IMAGES",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.align(Alignment.Start).padding(top = 8.dp)
-        )
+        // Confirm selected images for deletion.
+        if (isSelectingImagesToRemove) {
+            Text(text = "${removedImageIds.size} image(s) selected.", style = MaterialTheme.typography.bodySmall)
 
+            Button(
+                onClick = { isSelectingImagesToRemove = false },
+                enabled = removedImageIds.isNotEmpty() && !isSaving,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("DELETE SELECTED")
+            }
+        }
+
+        // Add images button
         Button(
             onClick = { imagePicker.launch("image/*") },
             enabled = !isSaving,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("SELECT IMAGES")
+            Text("ADD IMAGES")
         }
-        Text(text = "${selectedImageUris.size} new image(s) selected.", style = MaterialTheme.typography.bodyMedium)
 
         if (selectedImageUris.isNotEmpty()) {
+            Text(
+                text = "${selectedImageUris.size} new image(s) selected.",
+                style = MaterialTheme.typography.bodySmall
+            )
+
             Button(
                 onClick = { selectedImageUris = emptyList() },
                 enabled = !isSaving,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                    contentColor = MaterialTheme.colorScheme.onTertiary),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("CLEAR SELECTED IMAGES")
+                Text("CLEAR NEW IMAGES")
             }
         }
 
