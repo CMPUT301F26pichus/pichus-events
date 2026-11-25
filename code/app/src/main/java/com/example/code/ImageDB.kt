@@ -7,14 +7,7 @@ import com.google.firebase.firestore.Blob
 /**
  * Stores all images in FireBase, and allows retrieval, update and addition functionalities
  *
- */
-
-/* To implement the front-end of user picking images to upload, refer to:
-    https://www.youtube.com/watch?v=mIQLQrXS_go&t=186s
- */
-
-/* To implement the front-end of user viewing images, refer to:
-    https://www.youtube.com/watch?v=5rMtMfoM5AI
+ * Outstanding Issues: N/A
  */
 
 class ImageDB {

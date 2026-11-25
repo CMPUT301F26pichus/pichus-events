@@ -7,6 +7,8 @@ import com.google.firebase.Timestamp
  *
  * A message has a sender and receiver ID, content and timestamp.
  *
+ * Outstanding Issues: N/A
+ *
  * @property senderID id of sender
  * @property receiverID id of receiver
  * @property content content of the message

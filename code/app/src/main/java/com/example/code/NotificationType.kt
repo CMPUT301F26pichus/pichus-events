@@ -2,6 +2,8 @@ package com.example.code
 
 /**
  * What a notification is about, so screens can show and filter them.
+ *
+ * Outstanding Issues: N/A
  */
 enum class NotificationType {
     LOTTERY_WON,

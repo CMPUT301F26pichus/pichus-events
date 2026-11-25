@@ -6,6 +6,8 @@ import com.google.firebase.Timestamp
  * A campsite lottery. One lottery can cover several campsites (US 02.04.02).
  * Entrants join its waiting list during registration, winners are drawn after it ends (US 02.05.01).
  *
+ * Outstanding Issues: N/A
+ *
  * @property lotteryID unique ID, also the document ID in Firestore
  * @property ownerID ID of the campsite owner running the lottery
  * @property campsiteIDs campsites in this lottery (same as Campsite.id)

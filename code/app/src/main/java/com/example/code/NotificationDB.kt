@@ -6,6 +6,8 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores notifications in Firestore.
  * Every notification ever sent stays here, so admins can review them (US 03.08.01).
+ *
+ * Outstanding Issues: N/A
  */
 class NotificationDB {
     private val db = Firebase.firestore

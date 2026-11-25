@@ -3,6 +3,8 @@ package com.example.code
 /**
  * A notification sent to one user: a message plus what it is about.
  *
+ * Outstanding Issues: N/A
+ *
  * @property message who sent it, who gets it, the text and the time
  * @property type what the notification is about
  */

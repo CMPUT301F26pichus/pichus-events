@@ -12,6 +12,8 @@ import com.journeyapps.barcodescanner.BarcodeEncoder
  *
  * A campsite has a name, location, occupancy, price, rating, image, policy and owner ID.
  *
+ * Outstanding Issues: N/A
+ *
  * @property name the name of the campsite
  * @property location geolocation of the campsite
  * @property locationName readable location shown on cards and details
@@ -38,6 +40,10 @@ class Campsite(var name: String = "",
     /**
      * Creates and returns a promotional QR code bitmap for display
      *
+     * 2026-11-18: Code is from a YouTube tutorial from Coding With Dev, titled
+     * "generate qr code with logo | Kotlin Tutorial | Step-by-Step Tutorial"
+     * https://www.youtube.com/watch?v=yuGIo5-8Tlc
+     * 
      * @return bitmap for the generated campsite QR code
      */
     fun createQRCode(): Bitmap {

@@ -9,6 +9,8 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores waiting lists in Firestore, one per campsite, keyed by campsite ID.
  * Keeps a local copy of every list so lookups need no suspend functions.
+ *
+ * Outstanding Issues: N/A
  */
 class WaitingListDB {
     private val db = Firebase.firestore

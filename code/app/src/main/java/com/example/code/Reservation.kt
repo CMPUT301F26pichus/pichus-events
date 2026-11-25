@@ -7,6 +7,8 @@ import com.google.firebase.Timestamp
  *
  * A reservation has a customer (entrant) ID, owner ID, campsite ID, start and end dates, guest count, and status.
  *
+ * Outstanding Issues: N/A
+ *
  * @property customerID ID of the entrant making the reservation
  * @property ownerID ID of the campsite owner
  * @property campsiteID ID of the campsite

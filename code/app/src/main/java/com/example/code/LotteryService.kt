@@ -5,6 +5,8 @@ import com.google.firebase.Timestamp
 /**
  * Runs the lottery draw once registration ends and tells entrants the result (US 02.05.01).
  *
+ * Outstanding Issues: N/A
+ *
  * @property lotteryDB where lotteries are saved
  * @property reservationDB where winners' reservations will go (US 01.04.01, not built yet)
  * @property notificationService sends win and lose notifications

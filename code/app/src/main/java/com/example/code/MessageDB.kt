@@ -5,6 +5,8 @@ import com.google.firebase.firestore.firestore
 
 /**
  * Stores all messages in FireBase, allows for retrieval and addition
+ *
+ * Outstanding Issues: N/A
  */
 class MessageDB {
     private val db = Firebase.firestore

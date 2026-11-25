@@ -7,6 +7,8 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores lotteries in Firestore, keyed by lottery ID.
  * Keeps a local copy of every lottery so lookups need no suspend functions.
+ *
+ * Outstanding Issues: N/A
  */
 class LotteryDB {
     private val db = Firebase.firestore

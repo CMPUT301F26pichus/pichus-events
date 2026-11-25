@@ -7,6 +7,8 @@ import com.google.firebase.firestore.firestore
 /**
  * Stores all users (admin, entrants, campsite owner) in FireBase, and allows retrieval, update,
  * addition, and deletion functionalities
+ *
+ * Outstanding Issues: N/A
  */
 class UserDB {
     private val db = Firebase.firestore

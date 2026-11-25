@@ -6,6 +6,8 @@ import com.google.firebase.Timestamp
  * Sends notifications and skips users who opted out (US 01.10.01).
  * Used for lottery results (US 01.03.01, US 01.03.02) and owner messages (US 02.10.01).
  *
+ * Outstanding Issues: N/A
+ *
  * @property notificationDB where notifications are saved
  * @property userDB used to check who opted out
  */
