@@ -28,10 +28,12 @@ import com.example.code.components.CampsiteCard
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.PichusTheme
 import android.app.DatePickerDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -42,6 +44,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.code.Availability
 import com.example.code.Reservation
+import com.example.code.ui.theme.ButtonCream
+import com.example.code.ui.theme.DeepSage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -135,8 +139,10 @@ fun BrowseScreen(
 
             Spacer(Modifier.width(8.dp))
 
-            FilledTonalButton(onClick = { showFilters = !showFilters }) {
-                Text(if (hasActiveFilters) "Filter •" else "Filter")
+            FilledTonalButton(onClick = { showFilters = !showFilters },
+                border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
+            ) {
+                Text(if (hasActiveFilters) "FILTER •" else "FILTER")
             }
         }
 
@@ -199,12 +205,17 @@ fun BrowseScreen(
                                     cal.get(Calendar.DAY_OF_MONTH)
                                 ).show()
                             },
-                            modifier = Modifier.weight(1.3f)
+                            modifier = Modifier.weight(1.3f),
+                            // Add outline
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = DeepSage,
+                                contentColor = ButtonCream
+                            ),
                         ) {
                             Text(
                                 text = selectedDateMillis?.let {
                                     displayDateFormat.format(Date(it))
-                                } ?: "Pick Date"
+                                } ?: "PICK DATE"
                             )
                         }
                     }
@@ -216,9 +227,11 @@ fun BrowseScreen(
                                 guestsFilter = ""
                                 selectedDateMillis = null
                             },
-                            modifier = Modifier.align(Alignment.End)
+                            modifier = Modifier.align(Alignment.End),
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.onSurface)
                         ) {
-                            Text("Clear Filters")
+                            Text("CLEAR")
                         }
                     }
                 }

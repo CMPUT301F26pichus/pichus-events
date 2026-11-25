@@ -36,11 +36,16 @@ fun ReservationDetailsScreen(
     onRate: (Int)->Unit,
     existingReview: String? = null,
     onPostReview: (String) -> Unit = {},
+    onMessageOwner: (String) -> Unit = {}, // sends message to campsite owner
     modifier: Modifier = Modifier
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     val startString = reservation.startDate?.toDate()?.let { dateFormat.format(it) } ?: "TBD"
     val endString = reservation.endDate?.toDate()?.let { dateFormat.format(it) } ?: "TBD"
+    var showMessageDialog by remember { mutableStateOf(false) }
+    var messageText by remember { mutableStateOf("") }
+    var messageSent by remember { mutableStateOf(false) }
+
 
     Scaffold(
         topBar = {
@@ -66,6 +71,18 @@ fun ReservationDetailsScreen(
             Text(text = "Number of Guests: ${reservation.guestCount}")
             Text(text = "Confirmed Dates:\n$startString - $endString")
             Text(text = "Details:\n${campsite.policy}")
+
+            if (userRole == "Entrant") {
+                Button(
+                    onClick = { showMessageDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("MESSAGE OWNER")
+                }
+                if (messageSent) {
+                    Text("Message sent!", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
 
             if (reservation.status == "ACTIVE" && reservation.endDate != null && reservation.endDate >= com.google.firebase.Timestamp.now()) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -175,5 +192,41 @@ fun ReservationDetailsScreen(
                 }
             }
         }
+    }
+    // Popup to write a message to the campsite owner
+    if (showMessageDialog) {
+        AlertDialog(
+            onDismissRequest = { showMessageDialog = false },
+            title = { Text("Message Owner") },
+            text = {
+                OutlinedTextField(
+                    value = messageText,
+                    onValueChange = { messageText = it },
+                    placeholder = { Text("Type a message...")},
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onMessageOwner(messageText)
+                        messageText = ""
+                        showMessageDialog = false
+                        messageSent = true
+                    },
+                    enabled = messageText.isNotBlank() // Can't be empty message
+                ) {
+                    Text("SEND")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showMessageDialog = false},
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                ) {
+                    Text("CANCEL")
+                }
+            }
+        )
     }
 }

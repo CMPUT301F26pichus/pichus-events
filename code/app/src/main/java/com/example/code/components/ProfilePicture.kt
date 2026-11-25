@@ -205,14 +205,14 @@ fun ProfilePicture(
 
                 confirmButton = {
 
-                    TextButton(
+                    Button(
                         onClick = {
                             showOptions = false
                             imagePicker.launch("image/*")
                         }
                     ) {
                         Text(
-                            if (imageBytes != null) "Change Picture"
+                            if (imageBytes != null) "UPDATE"
                             else "UPLOAD"
                         )
                     }
@@ -246,7 +246,10 @@ fun ProfilePicture(
                                             isUploading = false
                                         }
                                     )
-                                }
+                                },
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
                             ) {
                                 Text("REMOVE")
                             }
@@ -255,7 +258,10 @@ fun ProfilePicture(
                         TextButton(
                             onClick = {
                                 showOptions = false
-                            }
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
                         ) {
                             Text("CANCEL")
                         }

@@ -54,9 +54,16 @@ class UserDB {
                 _users.removeAll { it.userID == user.userID }
             }
     }
-    fun getUser(deviceID: String): User {
+
+    /**
+     * Finds the user linked to this phone
+     *
+     * @param deviceID this phone's Android ID
+     * @return the linked user, or null if this phone isn't linked yet
+     */
+    fun getUser(deviceID: String): User? {
         val user = _users.filter {it.deviceID == deviceID}
-        return user[0]
+        return user.firstOrNull() // null if no user linked to this device
     }
 
     /**
@@ -117,6 +124,27 @@ class UserDB {
     fun updateProfilePicture(user: User, imageId: String) {
         usersRef.document(user.userID.toString())
             .update("profilePictureId", imageId)
+    }
+
+    /**
+     * Links this phone to a user (so they don't need to type ID next time)
+     *
+     * @param user user to link
+     * @param deviceID this phone's Android ID, or "" to unlink
+     */
+    fun updateDeviceID(user: User, deviceID: String) {
+        usersRef.document(user.userID.toString()).update("deviceID", deviceID)
+    }
+
+    /**
+     * Turns notifications on or off for a user
+     *
+     * @param user user changing their setting
+     * @param enabled true to get notifications, false to opt out
+     */
+
+    fun updateNotificationsEnabled(user: User, enabled: Boolean) {
+        usersRef.document(user.userID.toString()).update("notificationsEnabled", enabled)
     }
 
     /**
