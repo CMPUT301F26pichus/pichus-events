@@ -17,7 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
-import com.example.code.screens.CreateWaitlistScreen
+import com.example.code.screens.CreateLotteryScreen
 import com.example.code.screens.OwnerCampsiteDetailsScreen
 import com.example.code.screens.OwnerHomeScreen
 import com.example.code.screens.RegisterCampsiteScreen
@@ -205,33 +205,26 @@ class MainActivity : ComponentActivity() {
                                         onBack = { isUpdatingCampsite = false },
                                         modifier = Modifier.padding(innerPadding)
                                     )
-                                } else if (isCreatingWaitlist && selectedCampsite != null) {
-                                    CreateWaitlistScreen(
-                                        campsite = selectedCampsite!!,
-                                        existingWaitlist = waitingListDB.getWaitingList(selectedCampsite!!.id),
-                                        onSaveWaitlist = { waitlist ->
-                                            waitingListDB.addWaitingList(waitlist)
-                                            // One lottery per campsite for now, ID = campsite ID.
-                                            val existing = lotteryDB.viewOwnLotteries(currentUser).find { it.lotteryID == waitlist.campsiteID }
-                                            when {
-                                                existing == null -> lotteryDB.addLottery(
-                                                    Lottery(
-                                                        lotteryID = waitlist.campsiteID,
-                                                        ownerID = currentUser.userID,
-                                                        campsiteIDs = listOf(waitlist.campsiteID),
-                                                        registrationEnd = waitlist.registrationDeadline ?: Timestamp.now(),
-                                                        waitingList = waitlist
+                                } else if (isCreatingWaitlist) {
+                                    CreateLotteryScreen(
+                                        ownerCampsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
+                                        ownerID = currentUser.userID,
+                                        existingLottery = selectedCampsite?.let { campsite ->
+                                            lotteryDB.viewOwnLotteries(currentUser).find { campsite.id in it.campsiteIDs }
+                                        },
+                                        onSaveLottery = { lottery ->
+                                            lotteryDB.addLottery(lottery)
+                                            lottery.campsiteIDs.forEach { campID ->
+                                                waitingListDB.addWaitingList(
+                                                    WaitingList(
+                                                        campsiteID = campID,
+                                                        capacity = lottery.waitingList.capacity,
+                                                        registrationDeadline = lottery.registrationEnd
                                                     )
                                                 )
-                                                // US 02.04.06: edit the existing listing, keep every field the owner did not change.
-                                                existing.status != LotteryStatus.COMPLETE -> {
-                                                    existing.registrationEnd = waitlist.registrationDeadline ?: existing.registrationEnd
-                                                    existing.waitingList = waitlist
-                                                    lotteryDB.updateLottery(existing)
-                                                }
-                                                // A drawn lottery is never reopened.
                                             }
                                             isCreatingWaitlist = false
+                                            selectedCampsite = null
                                         },
                                         onBack = { isCreatingWaitlist = false },
                                         modifier = Modifier.padding(innerPadding)
@@ -242,6 +235,10 @@ class MainActivity : ComponentActivity() {
                                             campsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
                                             onCampsiteClick = { selectedCampsite = it },
                                             onRegisterClick = { isRegisteringCampsite = true },
+                                            onCreateLotteryClick = {
+                                                selectedCampsite = null
+                                                isCreatingWaitlist = true
+                                            },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     } else {
