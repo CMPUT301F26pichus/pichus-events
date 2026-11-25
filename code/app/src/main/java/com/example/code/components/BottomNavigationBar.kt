@@ -7,8 +7,10 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,7 +32,9 @@ fun BottomNavigationBar(
     selectedTab: AppTab,
     onTabSelected: (AppTab) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar (
+        containerColor = MaterialTheme.colorScheme.tertiary // Dark brown dock
+    ) {
 
         AppTab.entries.forEach { tab ->
 
@@ -50,7 +54,14 @@ fun BottomNavigationBar(
 
                 label = {
                     Text(tab.title)
-                }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.onTertiary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onTertiary,
+                    unselectedTextColor = MaterialTheme.colorScheme.onTertiary
+                )
             )
         }
     }

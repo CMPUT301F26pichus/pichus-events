@@ -1,5 +1,6 @@
 package com.example.code.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,9 +24,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.example.code.User
 
 /**
- * Welcome screen. This is the screen users see when they first start up/launch the app.
- * Asks the user for their user ID so the app knows who they are
- * (temporary until we implement device identification)
+ * Welcome screen. This is the screen users see when they first start up/launch the app. Shown when the phone isn't linked to a user yet.
+ * The user enters their ID once, then the app remembers their device (US 01.09.01)
  */
 
 @Composable
@@ -86,6 +86,7 @@ fun WelcomeScreen(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
             ),
+            border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline), // Outline the button so stands out from background
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("POLICY AND GUIDELINES")

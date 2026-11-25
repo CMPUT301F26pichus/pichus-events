@@ -56,6 +56,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
 import android.net.Uri
 import androidx.compose.ui.draw.clip
+import com.example.code.ui.theme.DeepSage
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -191,7 +192,9 @@ fun UpdateCampsiteScreen(
                         } else {
                             Button(
                                 onClick = { removedImageIds.add(image.id) },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiary)
                             ) {
                                 Text("REMOVE")
                             }
@@ -229,7 +232,9 @@ fun UpdateCampsiteScreen(
             Button(
                 onClick = { selectedImageUris = emptyList() },
                 enabled = !isSaving,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiary,
+                    contentColor = MaterialTheme.colorScheme.onTertiary),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("CLEAR SELECTED IMAGES")
@@ -303,7 +308,7 @@ fun UpdateCampsiteScreen(
             enabled = !isSaving,
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = DarkBrown,
+                containerColor = DeepSage,
                 contentColor = MaterialTheme.colorScheme.onTertiary
             ),
             modifier = Modifier
@@ -346,9 +351,9 @@ private fun UpdatePillTextField(
             focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            focusedBorderColor = Color.Transparent,
-            unfocusedBorderColor = Color.Transparent,
-            disabledBorderColor = Color.Transparent
+            focusedBorderColor = MaterialTheme.colorScheme.outline,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            disabledBorderColor = MaterialTheme.colorScheme.outline
         ),
         keyboardOptions = keyboardOptions,
         modifier = modifier.fillMaxWidth()

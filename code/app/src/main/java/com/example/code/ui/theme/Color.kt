@@ -23,14 +23,20 @@ val PichusGreen = Color(0xFFBFC2AF)
 // Off-white beige for text on green buttons
 val ButtonCream = Color(0xFFFFFAF2)
 
+// Darker text for sage buttons
+val OliveText = Color(0xFF2F3524)
+
 // Beige for input fields and secondary buttons (e.g. policy and guidelines)
 val BeigePill = Color(0xFFF6EDDF)
 
-// Sage text/placeholder inside beige pills
-val PillText = Color(0xFFA0A690)
+// Sage text/placeholder inside beige pills, old light one 0xFFA0A690
+val PillText = Color(0xFF646B56)
 
 // Deeper green
 val GreenDark = Color(0xFF818263)
+
+// Deep sage green for forward buttons that sit on sage cards
+val DeepSage = Color(0xFF6E7560)
 
 // Dark brown for text body
 val DarkBrown = Color(0xff44372d)
@@ -39,5 +45,5 @@ val DarkBrown = Color(0xff44372d)
 val MutedBrown = Color(0xFF8A7F6E)
 
 // Red for destructive actions (delete account, cancel)
-val PichusRed = Color(0xFFA9503F)
+val PichusRed = Color(0xFF93564A)
 

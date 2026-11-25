@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import android.provider.Settings
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
 import com.example.code.screens.CreateLotteryScreen
@@ -59,6 +60,7 @@ class MainActivity : ComponentActivity() {
                 val lotteryDB = remember { LotteryDB() }
                 val notificationService = remember { NotificationService(NotificationDB(), userDB) }
                 val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
+                val messageDB = remember { MessageDB() }
                 //Track reservations
                 var selectedReservationId by remember { mutableStateOf<String?>(null) }
 
@@ -82,6 +84,19 @@ class MainActivity : ComponentActivity() {
 
                 // True until user enters ID
                 var showWelcome by remember { mutableStateOf(true) }
+
+                // This phone's unique Android ID, used to remember who the user is
+                val deviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+
+                // If this phone is already linked to a user, skip the welcome screen straight to homescreen
+                val linkedUser = userDB.getUser(deviceID)
+
+                LaunchedEffect(linkedUser) {
+                    if (linkedUser != null && showWelcome) {
+                        UserSession.currentUserId = linkedUser.userID
+                        showWelcome = false
+                    }
+                }
 
                 // True while policy screen is open
                 var showPolicy by rememberSaveable { mutableStateOf(false) }
@@ -152,6 +167,7 @@ class MainActivity : ComponentActivity() {
                             users = userDB.users, // Registered users to check id against
                             onContinue = { id ->
                                 UserSession.currentUserId = id // Remember who user is
+                                userDB.users.find { it.userID == id }?.let { userDB.updateDeviceID(it, deviceID) } // Link this phone
                                 showWelcome = false // Go into app
                             },
                             onPolicyClick = { showPolicy = true }, // Opens policy and guidelines screen
@@ -372,6 +388,22 @@ class MainActivity : ComponentActivity() {
                                                     )
                                                 )
                                             },
+                                            onMessageOwner = { text ->
+                                                // Save the message and notify the owner
+                                                messageDB.sendMessage(
+                                                    Message(
+                                                        senderID = UserSession.currentUserId,
+                                                        receiverID = campsite.ownerID,
+                                                        content = text,
+                                                        timestamp = Timestamp.now()
+                                                    )
+                                                )
+                                                notificationService.sendToAll(
+                                                    listOf(campsite.ownerID),
+                                                    NotificationType.ENTRANT_MESSAGE,
+                                                    "New message about ${campsite.name}: $text"
+                                                )
+                                            },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     } else {
@@ -418,6 +450,7 @@ class MainActivity : ComponentActivity() {
                                                 onEditProfile = { editingProfile = true },
                                                 onAdminTools = { adminPage = AdminPage.MENU },
                                                 onLogout = {
+                                                    userDB.updateDeviceID(currentUser, "") // Unlink this phone so someone else can log in
                                                     UserSession.currentUserId = -1
                                                     selectedTab = AppTab.SEARCH
                                                     selectedCampsite = null
