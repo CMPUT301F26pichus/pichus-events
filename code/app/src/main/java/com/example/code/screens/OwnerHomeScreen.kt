@@ -3,6 +3,7 @@ package com.example.code.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -34,7 +35,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 
 /**
@@ -46,7 +46,8 @@ fun OwnerHomeScreen(
     campsites: List<Campsite>, // Campsites to show
     onCampsiteClick: (Campsite) -> Unit,
     onRegisterClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCreateLotteryClick: () -> Unit = {}
 ) {
     // Remembers what user typed in search bar. If changes, screen redraws itself. Also survives screen rotation
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -75,27 +76,52 @@ fun OwnerHomeScreen(
             modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)
         )
 
-        // Register New button
-        Button(
-            onClick = onRegisterClick,
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF403B36),
-                contentColor = Color.White
-            ),
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .height(36.dp),
-            contentPadding = PaddingValues(
-                horizontal = 16.dp,
-                vertical = 4.dp
-            )
+        // Buttons Row (Register New & Create Lottery)
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(bottom = 16.dp)
         ) {
-            Text(
-                text = "Register New",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Button(
+                onClick = onRegisterClick,
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF403B36),
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .height(36.dp),
+                contentPadding = PaddingValues(
+                    horizontal = 16.dp,
+                    vertical = 4.dp
+                )
+            ) {
+                Text(
+                    text = "Register New",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Button(
+                onClick = onCreateLotteryClick,
+                shape = RoundedCornerShape(50),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF403B36),
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .height(36.dp),
+                contentPadding = PaddingValues(
+                    horizontal = 16.dp,
+                    vertical = 4.dp
+                )
+            ) {
+                Text(
+                    text = "Create Lottery",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
         // Search bar
@@ -140,7 +166,8 @@ private fun OwnerHomeScreenPreview() {
         OwnerHomeScreen(
             campsites = SampleCampsites.all().filter { it.ownerID == 1 },
             onCampsiteClick = {},
-            onRegisterClick = {}
+            onRegisterClick = {},
+            onCreateLotteryClick = {}
         )
     }
 }
