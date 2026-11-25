@@ -24,9 +24,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import com.example.code.User
 
 /**
- * Welcome screen. This is the screen users see when they first start up/launch the app.
- * Asks the user for their user ID so the app knows who they are
- * (temporary until we implement device identification)
+ * Welcome screen. This is the screen users see when they first start up/launch the app. Shown when the phone isn't linked to a user yet.
+ * The user enters their ID once, then the app remembers their device (US 01.09.01)
  */
 
 @Composable
