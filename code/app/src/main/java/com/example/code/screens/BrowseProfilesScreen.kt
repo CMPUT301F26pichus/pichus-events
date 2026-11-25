@@ -107,11 +107,10 @@ fun BrowseProfilesScreen(
                 Text("Are you sure you want to remove ${user.name}'s profile picture?")
             },
             confirmButton = {
-                // red to match the delete (trash) icon
-                Button(
+                TextButton(
                     onClick = {
-                        onDeleteUser(user)
-                        userToDelete = null
+                        onDeleteProfilePicture(user)
+                        userPicToDelete = null
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error,
@@ -123,12 +122,11 @@ fun BrowseProfilesScreen(
             },
             dismissButton = {
                 TextButton(
-                    onClick = { userToDelete = null },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                    onClick = {
+                        userPicToDelete = null
+                    }
                 ) {
-                    Text("CANCEL")
+                    Text("Cancel")
                 }
             }
         )
