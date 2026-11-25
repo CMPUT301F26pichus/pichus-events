@@ -40,6 +40,7 @@ import com.example.code.WaitingList
 import com.example.code.components.BackButton
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.DarkBrown
+import com.example.code.ui.theme.DeepSage
 import com.example.code.ui.theme.PichusTheme
 import com.google.firebase.Timestamp
 import java.util.Date
@@ -257,7 +258,7 @@ fun CreateLotteryScreen(
             },
             shape = RoundedCornerShape(50),
             colors = ButtonDefaults.buttonColors(
-                containerColor = DarkBrown,
+                containerColor = DeepSage,
                 contentColor = MaterialTheme.colorScheme.onTertiary
             ),
             modifier = Modifier
