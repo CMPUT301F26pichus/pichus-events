@@ -57,12 +57,14 @@ fun UserProfileCard(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
+
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Profile picture or default placeholder.

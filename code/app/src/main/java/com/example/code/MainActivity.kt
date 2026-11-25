@@ -31,6 +31,7 @@ import com.example.code.components.AppTab
 import com.example.code.components.BottomNavigationBar
 import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
+import com.example.code.screens.BrowseImagesScreen
 import com.example.code.screens.EditProfileScreen
 import com.example.code.screens.PolicyScreen
 import com.example.code.screens.ReservationDetailsScreen
@@ -498,9 +499,14 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
-
                                     AdminPage.IMAGES -> {
-                                        PlaceholderScreen()
+                                        BrowseImagesScreen(
+                                            images = imageDB.images,
+                                            onBack = { adminPage = AdminPage.MENU },
+                                            onDeleteImage = { image ->
+                                                imageDB.deleteImage(image.id)
+                                            }
+                                        )
                                     }
                                 }
                             }

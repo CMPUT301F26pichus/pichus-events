@@ -18,7 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
 import com.example.code.components.BackButton
 import com.example.code.components.UserProfileCard
@@ -185,9 +184,7 @@ fun BrowseProfilesScreen(
                         UserProfileCard(
                             user = user,
                             imageDB = imageDB,
-                            onDeleteClick = {
-                                userToDelete = user
-                            },
+                            onDeleteClick = { userToDelete = user },
                             onDeletePictureClick = { userPicToDelete = user }
                         )
                     }
