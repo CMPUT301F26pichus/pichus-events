@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import android.provider.Settings
+import android.widget.Toast
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
 import com.example.code.screens.CreateLotteryScreen
@@ -264,6 +265,15 @@ class MainActivity : ComponentActivity() {
                                             availabilities = availabilityDB.availabilities,
                                             reservations = reservationDB.reservations,
                                             onCampsiteClick = { selectedCampsite = it },
+                                            // US 01.12.01: the QR code holds the campsite ID, so open that campsite
+                                            onQrScanned = { scannedId ->
+                                                val scannedCampsite = campsiteDB.campsites.find { it.id == scannedId.trim() }
+                                                if (scannedCampsite != null) {
+                                                    selectedCampsite = scannedCampsite
+                                                } else {
+                                                    Toast.makeText(this@MainActivity, "No campsite found for this QR code", Toast.LENGTH_SHORT).show()
+                                                }
+                                            },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
