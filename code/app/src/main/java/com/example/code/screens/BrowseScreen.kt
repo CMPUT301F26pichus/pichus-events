@@ -54,6 +54,7 @@ import kotlin.math.roundToInt
 
 /**
  * Entrant home screen. Entrants can search campsites by keyword (US 01.01.01)
+ * filter by location, date, and number of guests (US 01.01.02),
  * and see the list of campsites (US 01.01.03)
  */
 
@@ -104,7 +105,13 @@ fun BrowseScreen(
             campsite to score
         }
         .let { list ->
-            if (hasActiveFilters) list.sortedByDescending { it.second ?: 0 } else list
+            if (hasActiveFilters) {
+                // Hide campsites that match none of the filters (0%), then rank best match first
+                list.filter { (it.second ?: 0) > 0 }
+                    .sortedByDescending { it.second ?: 0 }
+            } else {
+                list
+            }
         }
 
     // Search bar on top, with the list of campsites below it
@@ -321,10 +328,10 @@ private fun calculateMatchScore(
     }
 
     if (guestCount != null && guestCount > 0) {
-        val guestScore = if (campsite.occupancy >= guestCount) {
-            100.0
-        } else {
-            ((campsite.occupancy.toDouble() / guestCount) * 70.0).coerceIn(0.0, 70.0)
+        val guestScore = when {
+            campsite.occupancy == guestCount -> 100.0
+            campsite.occupancy > guestCount -> (100.0 - (campsite.occupancy - guestCount) * 5.0).coerceAtLeast(75.0)
+            else -> ((campsite.occupancy.toDouble() / guestCount) * 70.0).coerceIn(0.0, 70.0)
         }
         scores.add(guestScore)
     }
