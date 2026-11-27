@@ -80,7 +80,6 @@ fun RegisterCampsiteScreen(
     var description by rememberSaveable { mutableStateOf("") }
     var occupancyText by rememberSaveable { mutableStateOf("") }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
-
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
@@ -218,7 +217,6 @@ fun RegisterCampsiteScreen(
                     ownerID = currentUserId
                 )
 
-                // No images selected: register normally.
                 if (selectedImageUris.isEmpty()) {
                     onCampsiteRegistered(newCampsite)
                 } else {

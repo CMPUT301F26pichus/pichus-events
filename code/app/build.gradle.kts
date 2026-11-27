@@ -60,4 +60,5 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0") // QR code generation
     implementation("com.github.bumptech.glide:glide:4.16.0") // converting Uri to displayable image
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
 }

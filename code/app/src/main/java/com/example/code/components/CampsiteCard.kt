@@ -1,9 +1,12 @@
 package com.example.code.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -94,6 +97,29 @@ fun CampsiteCard(
                     text = "Max Occupancy: ${campsite.occupancy}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                if (campsite.tags.isNotBlank()) {
+                    val tagList = campsite.tags.split(",", " ").map { it.trim() }.filter { it.isNotBlank() }
+                    if (tagList.isNotEmpty()) {
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            tagList.forEach { tag ->
+                                Surface(
+                                    shape = RoundedCornerShape(50),
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                                ) {
+                                    Text(
+                                        text = tag,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
             // The i button on right for info icon
             IconButton(onClick = onInfoClick) {
