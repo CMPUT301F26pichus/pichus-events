@@ -33,6 +33,7 @@ import com.example.code.components.AdminPage
 import com.example.code.data.UserSession
 import com.example.code.screens.BrowseImagesScreen
 import com.example.code.screens.EditProfileScreen
+import com.example.code.screens.NotificationsScreen
 import com.example.code.screens.PolicyScreen
 import com.example.code.screens.ReservationDetailsScreen
 import com.example.code.screens.ReservationsScreen
@@ -59,7 +60,8 @@ class MainActivity : ComponentActivity() {
                 val reviewDB = remember { ReviewDB() }
                 val availabilityDB = remember {AvailabilityDB()}
                 val lotteryDB = remember { LotteryDB() }
-                val notificationService = remember { NotificationService(NotificationDB(), userDB) }
+                val notificationDB = remember { NotificationDB() }
+                val notificationService = remember { NotificationService(notificationDB, userDB) }
                 val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
                 val messageDB = remember { MessageDB() }
                 //Track reservations
@@ -425,7 +427,11 @@ class MainActivity : ComponentActivity() {
                             }
 
                             AppTab.NOTIFICATIONS -> {
-                                PlaceholderScreen()
+                                // US 01.03.01, US 01.03.02: shows lottery results and other notifications
+                                NotificationsScreen(
+                                    notifications = notificationDB.getNotificationsFor(currentUser.userID),
+                                    modifier = Modifier.padding(innerPadding)
+                                )
                             }
 
                             AppTab.PROFILE -> {
