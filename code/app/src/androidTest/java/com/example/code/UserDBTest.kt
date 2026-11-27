@@ -95,4 +95,46 @@ class UserDBTest {
         Thread.sleep(2000)
         assertEquals(7805550000L, findTestUser()?.phoneNum)
     }
+
+    @Test
+    fun getUserGetsUser() {
+        val user = addTestUser()
+        userDB.updateDeviceID(user, "6d155e2351ebaa76")
+        Thread.sleep(2000)
+        assertEquals(findTestUser()?.userID, userDB.getUser("6d155e2351ebaa76")?.userID)
+    }
+
+    @Test
+    fun updateProfilePictureIDChangesPictureID() {
+        val user = addTestUser()
+        userDB.updateProfilePicture(user, "new_profile_picture")
+        Thread.sleep(2000)
+        assertEquals("new_profile_picture", findTestUser()?.profilePictureId)
+    }
+
+    @Test
+    fun updateDeviceIDChangesDeviceID() {
+        val user = addTestUser()
+        userDB.updateDeviceID(user, "6d155e2351ebaa76")
+        Thread.sleep(2000)
+        assertEquals("6d155e2351ebaa76", findTestUser()?.deviceID)
+    }
+
+    @Test
+    fun updateDeviceIDRemovesDeviceID() {
+        val user = addTestUser()
+        userDB.updateDeviceID(user, "")
+        Thread.sleep(2000)
+        assertEquals("", findTestUser()?.deviceID)
+    }
+
+    @Test
+    fun updateNotificationPreferenceChangesPreference() {
+        val user = addTestUser()
+        userDB.updateNotificationsEnabled(user, false)
+        Thread.sleep(2000)
+        assertEquals(false, findTestUser()?.notificationsEnabled)
+    }
+
+
 }
