@@ -326,6 +326,7 @@ class MainActivity : ComponentActivity() {
                                     if (isOwnerMode) {
                                         OwnerCampsiteDetailsScreen(
                                             campsite = campsite,
+                                            imageDB = imageDB,
                                             bookedReservations = reservationDB.reservations.filter { it.campsiteID == campsite.id && it.status == "ACTIVE" },
                                             waitingList = waitingListDB.getWaitingList(campsite.id),
                                             users = userDB.users,

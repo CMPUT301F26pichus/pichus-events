@@ -2,6 +2,7 @@ package com.example.code.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,24 +26,23 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.code.Campsite
+import com.example.code.ImageDB
 import com.example.code.Reservation
 import com.example.code.User
 import com.example.code.WaitingList
-import com.example.code.ImageDB
-import com.example.code.components.CampsiteImageCarousel
 import com.example.code.components.BackButton
+import com.example.code.components.CampsiteImageCarousel
+import com.example.code.components.CampsiteMapView
 import com.example.code.data.SampleCampsites
-import com.example.code.ui.theme.DarkBrown
 import com.example.code.ui.theme.DeepSage
 import com.example.code.ui.theme.PichusGreen
 import com.example.code.ui.theme.PichusTheme
-import com.example.code.ui.theme.SageCard
 import com.google.firebase.Timestamp
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 /**
- * US 02.01.04: As a campsite owner, I want to view details of my campsite.
+ * US 02.01.04: As a campsite owner, I want to view details of my campsite (including map location, images, tags).
  * US 02.06.01: As a campsite owner, I want to view currently booked dates.
  * US 02.04.03, 02.04.07: As a campsite owner, I want to set a registration period & capacity for my waitlist.
  * US 02.09.01: As a campsite owner, I want to view a list of entrants who have joined the waitlist.
@@ -50,13 +50,14 @@ import java.util.Locale
 @Composable
 fun OwnerCampsiteDetailsScreen(
     campsite: Campsite,
+    modifier: Modifier = Modifier,
+    imageDB: ImageDB? = null,
     onBack: () -> Unit,
     onUpdateClick: () -> Unit,
-    modifier: Modifier = Modifier,
     bookedReservations: List<Reservation> = emptyList(),
     waitingList: WaitingList? = null,
     users: List<User> = emptyList(),
-    onCreateWaitlistClick: () -> Unit = {},
+    onCreateWaitlistClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -76,6 +77,12 @@ fun OwnerCampsiteDetailsScreen(
             style = MaterialTheme.typography.titleLarge.copy(fontSize = 26.sp),
             modifier = Modifier.padding(bottom = 4.dp)
         )
+
+        // Campsite Images Carousel (US 02.01.02)
+        if (imageDB != null) {
+            CampsiteImageCarousel(campsiteId = campsite.id, imageDB = imageDB)
+            Spacer(Modifier.height(4.dp))
+        }
 
         // Update Button (US 02.01.03)
         Button(
@@ -97,7 +104,7 @@ fun OwnerCampsiteDetailsScreen(
             )
         }
 
-        // Details Card
+        // Details Card (Bubble 1: Location, Max Occupancy, Price, Rating, Description, Tags)
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
@@ -126,6 +133,71 @@ fun OwnerCampsiteDetailsScreen(
                     }
                 )
                 DetailRow(label = "Description / Rules", value = campsite.policy.ifBlank { "None" })
+
+                // Tags (US 02.01.02)
+                if (campsite.tags.isNotBlank()) {
+                    val tagList = campsite.tags.split(",", " ").map { it.trim() }.filter { it.isNotBlank() }
+                    if (tagList.isNotEmpty()) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(
+                                text = "Tags",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                tagList.forEach { tag ->
+                                    Surface(
+                                        shape = RoundedCornerShape(50),
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                                    ) {
+                                        Text(
+                                            text = tag,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Map Location Card (Bubble 2: Map Location below Details Card)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            ),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Map Location",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.outline
+                )
+                val lat = campsite.location?.latitude ?: 53.5461
+                val lon = campsite.location?.longitude ?: -113.4938
+                CampsiteMapView(
+                    latitude = lat,
+                    longitude = lon,
+                    title = campsite.name.ifBlank { "Campsite Location" }
+                )
+                if (campsite.location == null) {
+                    Text(
+                        text = "Default location shown. Update campsite to set custom GPS coordinates.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
             }
         }
 
@@ -230,7 +302,7 @@ fun OwnerCampsiteDetailsScreen(
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
                             )
                         }
                     }
@@ -312,6 +384,7 @@ private fun OwnerCampsiteDetailsScreenPreview() {
     PichusTheme {
         OwnerCampsiteDetailsScreen(
             campsite = SampleCampsites.all().first(),
+            imageDB = null,
             bookedReservations = emptyList(),
             waitingList = null,
             users = emptyList(),
