@@ -3,7 +3,9 @@ package com.example.code.screens
 import androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Companion.Start
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -19,7 +23,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,6 +68,8 @@ fun CampsiteDetailsScreen(
     onLeaveWaitlist: () -> Boolean = {true},
     isAdmin: Boolean = false,
     onDeleteCampsite: () -> Unit = {},
+    onDeleteReview: (Review) -> Unit = {},
+    onDeleteRating: (Reservation) -> Unit = {},
     reviews: List<Review> = emptyList(),
     users: List<User> = emptyList(),
     reservations: List<Reservation> = emptyList()
@@ -67,6 +77,8 @@ fun CampsiteDetailsScreen(
     var errorMessage by remember(campsite.id, isOnWaitingList) {mutableStateOf<String?>(null)}
 
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+
+    val feedbackUserIds = ( reservations.filter { it.rating > 0 }.map { it.customerID } + reviews.map { it.reviewerID } ).distinct()
 
     Column(
         modifier = modifier
@@ -165,14 +177,14 @@ fun CampsiteDetailsScreen(
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
         Text(
-            text = "Reviews (${reviews.size})",
+            text = "Feedback (${feedbackUserIds.size})",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.align(Alignment.Start)
         )
 
-        if (reviews.isEmpty()) {
+        if (feedbackUserIds.isEmpty()) {
             Text(
-                text = "No reviews yet.",
+                text = "No feedback yet.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier
@@ -180,32 +192,69 @@ fun CampsiteDetailsScreen(
                     .padding(bottom = 16.dp)
             )
         } else {
-            reviews.forEach { review ->
-                val reviewerName = users
-                    .find { it.userID == review.reviewerID }
-                    ?.name
-                    ?.ifBlank { null }
-                    ?: "Camper #${review.reviewerID}"
-                val reviewerRating = reservations
-                    .find { it.customerID == review.reviewerID && it.rating > 0 }
-                    ?.rating
+            feedbackUserIds.forEach { reviewerID ->
+
+                var showReviewMenu by remember(reviewerID) { mutableStateOf(false) }
+                val reviewerName = users.find { it.userID == reviewerID }?.name?.ifBlank { null } ?: "Camper #$reviewerID"
+                val reviewerReservation = reservations.find { it.customerID == reviewerID && it.rating > 0 }
+                val reviewerRating = reviewerReservation?.rating
+                val reviewerReview = reviews.find { it.reviewerID == reviewerID }
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Column(
                         modifier = Modifier.padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text(
-                            text = reviewerName,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = reviewerName,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            // Only admins can delete reviews
+                            // Only show the menu if a written review exists
+                            if (isAdmin && (reviewerReview != null || reviewerReservation != null)) {
+                                Box {
+                                    IconButton(onClick = { showReviewMenu = true }) {
+                                        Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Review options")
+                                    }
+                                    DropdownMenu(
+                                        expanded = showReviewMenu,
+                                        onDismissRequest = { showReviewMenu = false }
+                                    ) {
+                                        if (reviewerReview != null) {
+                                            DropdownMenuItem(
+                                                text = { Text("Delete review") },
+                                                onClick = {
+                                                    showReviewMenu = false
+                                                    onDeleteReview(reviewerReview)
+                                                }
+                                            )
+                                        }
+                                        if (reviewerReservation != null) {
+                                            DropdownMenuItem(
+                                                text = { Text("Delete rating") },
+                                                onClick = {
+                                                    showReviewMenu = false
+                                                    onDeleteRating(reviewerReservation)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Show stars only if the entrant submitted a rating
                         if (reviewerRating != null) {
                             Text(
                                 text = "★".repeat(reviewerRating) + "☆".repeat(5 - reviewerRating),
@@ -213,10 +262,11 @@ fun CampsiteDetailsScreen(
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
-                        Text(
-                            text = review.content,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        // Show written content only if the entrant submitted a review
+                        if (reviewerReview != null) {
+                            Text(text = reviewerReview.content, style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
                     }
                 }
             }
@@ -236,7 +286,6 @@ fun CampsiteDetailsScreen(
                 Text("REMOVE CAMPSITE")
             }
         }
-
     }
 
     if (showDeleteConfirmation) {

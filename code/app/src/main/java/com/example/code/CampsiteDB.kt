@@ -148,8 +148,20 @@ class CampsiteDB {
      * @param campsiteId ID of the campsite to update
      * @param newRating calculated average rating
      */
-    fun updateRating(campsiteId: String, newRating: Double) {
-        campsitesRef.document(campsiteId).update("rating", newRating)
+    fun updateRating(
+        campsiteId: String,
+        newRating: Double,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        campsitesRef.document(campsiteId)
+            .update("rating", newRating)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
 
     /**

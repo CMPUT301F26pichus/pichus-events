@@ -128,6 +128,49 @@ class ReservationDB {
     }
 
     /**
+     * Deletes a reservation's rating and calculates the campsite's new average.
+     * The written review is stored separately and is not affected.
+     */
+    fun deleteRatingAndCalculateAverage(
+        reservation: Reservation,
+        onSuccess: (Double) -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        val docId = reservation.customerID.toString() + "_" + reservation.campsiteID
+
+        // First remove only the star rating from this reservation
+        reservationsRef.document(docId)
+            .update("rating", 0)
+            .addOnSuccessListener {
+
+                // Retrieve the campsite's reservations after the rating was removed
+                reservationsRef
+                    .whereEqualTo("campsiteID", reservation.campsiteID)
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+
+                        val remainingRatings = snapshot.documents.mapNotNull { document ->
+                            document.toObject(Reservation::class.java)?.rating
+                        }.filter { it > 0 }
+
+                        // Calculate the new average. If no ratings remain, use 0.0
+                        val newAverage = if (remainingRatings.isEmpty()) {
+                            0.0
+                        } else {
+                            Math.round(remainingRatings.average() * 10.0) / 10.0
+                        }
+                        onSuccess(newAverage)
+                    }
+                    .addOnFailureListener { exception ->
+                        onFailure(exception)
+                    }
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
+
+    /**
      * Updates local _reservations list
      */
     init {
