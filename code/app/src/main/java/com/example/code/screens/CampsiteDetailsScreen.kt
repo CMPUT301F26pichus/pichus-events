@@ -68,7 +68,6 @@ fun CampsiteDetailsScreen(
 
     var showDeleteConfirmation by remember { mutableStateOf(false) }
 
-    // Everything should be stacked top to bottom with small gaps between each line
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -77,7 +76,6 @@ fun CampsiteDetailsScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally // Center everything
     ) {
-        // Back arrow to go back to previous browse screen
         BackButton(
             onBack = onBack,
             modifier = Modifier.align(Alignment.Start)

@@ -1,18 +1,28 @@
 package com.example.code.screens
 
 import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,13 +40,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,31 +55,20 @@ import com.example.code.Image
 import com.example.code.ImageDB
 import com.example.code.components.BackButton
 import com.example.code.components.ImageUtils
-import com.example.code.data.SampleCampsites
-import com.example.code.ui.theme.DarkBrown
-import com.example.code.ui.theme.PichusTheme
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.suspendCancellableCoroutine
-import android.net.Uri
-import androidx.compose.ui.draw.clip
 import com.example.code.ui.theme.DeepSage
+import com.example.code.ui.theme.PichusTheme
+import com.google.firebase.firestore.GeoPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Surface
 
 /**
  * US 02.01.03: As a campsite owner, I want to update details about my campsite.
- * Pre-filled form allowing owners to edit campsite name, location, description, occupancy, etc.
+ * US 02.01.02: Update map location (geolocation), description, max occupancy, tags, and images.
  */
 @Composable
 fun UpdateCampsiteScreen(
@@ -85,19 +84,19 @@ fun UpdateCampsiteScreen(
     var location by rememberSaveable { mutableStateOf(campsite.locationName) }
     var description by rememberSaveable { mutableStateOf(campsite.policy) }
     var occupancyText by rememberSaveable { mutableStateOf(if (campsite.occupancy > 0) campsite.occupancy.toString() else "") }
+    var tags by rememberSaveable { mutableStateOf(campsite.tags) }
+    var latText by rememberSaveable { mutableStateOf(campsite.location?.latitude?.toString() ?: "") }
+    var lonText by rememberSaveable { mutableStateOf(campsite.location?.longitude?.toString() ?: "") }
     var selectedImageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     val removedImageIds = remember { mutableStateListOf<String>() }
     var isSelectingImagesToRemove by rememberSaveable { mutableStateOf(false) }
     var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
     var isSaving by rememberSaveable { mutableStateOf(false) }
-
-    // Get all images belonging to this campsite.
     val existingImages = imageDB.images.filter { image ->
         image.imageType == "CAMPSITE" &&
                 image.campsiteId == campsite.id
     }
 
-    // Open the gallery and allow selecting multiple images.
     val imagePicker = rememberLauncherForActivityResult(contract = ActivityResultContracts.GetMultipleContents()) { uris ->
         selectedImageUris = (selectedImageUris + uris).distinct()
     }
@@ -148,7 +147,32 @@ fun UpdateCampsiteScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
-        // Images section
+        UpdatePillTextField(
+            value = tags,
+            onValueChange = { tags = it },
+            placeholderText = "Tags"
+        )
+
+        Text(
+            text = "MAP LOCATION (GEOLOCATION)",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.align(Alignment.Start).padding(top = 4.dp)
+        )
+
+        UpdatePillTextField(
+            value = latText,
+            onValueChange = { latText = it },
+            placeholderText = "Latitude (e.g. 53.5461)",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
+        UpdatePillTextField(
+            value = lonText,
+            onValueChange = { lonText = it },
+            placeholderText = "Longitude (e.g. -113.4938)",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+        )
+
         Text(
             text = "IMAGES",
             style = MaterialTheme.typography.titleMedium,
@@ -157,12 +181,10 @@ fun UpdateCampsiteScreen(
                 .padding(top = 8.dp)
         )
 
-        // Hide existing images that have been selected for removal.
         val visibleExistingImages = existingImages.filter { image ->
             image.id !in removedImageIds
         }
 
-        // Display existing images AND newly selected images.
         val totalVisibleImages = visibleExistingImages.size + selectedImageUris.size
 
         if (totalVisibleImages == 0) {
@@ -183,7 +205,6 @@ fun UpdateCampsiteScreen(
                 userScrollEnabled = false
             ) {
 
-                // Existing images from Firestore
                 items(
                     items = visibleExistingImages,
                     key = { it.id }
@@ -235,7 +256,6 @@ fun UpdateCampsiteScreen(
                     }
                 }
 
-                // Newly selected images from the device gallery
                 items(
                     items = selectedImageUris,
                     key = { "new_$it" }
@@ -293,7 +313,6 @@ fun UpdateCampsiteScreen(
             }
         }
 
-        // Remove or undo image removal
         if (existingImages.isNotEmpty()) {
             Button(
                 onClick = {
@@ -322,28 +341,6 @@ fun UpdateCampsiteScreen(
             }
         }
 
-    // Finish selecting images for removal.
-        if (isSelectingImagesToRemove) {
-            Text(
-                text = "${removedImageIds.size} image(s) selected for removal.",
-                style = MaterialTheme.typography.bodySmall
-            )
-
-            Button(
-                onClick = {
-                    isSelectingImagesToRemove = false
-                },
-                enabled = removedImageIds.isNotEmpty() && !isSaving,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("DONE")
-            }
-        }
-
-        // Confirm selected images for deletion.
         if (isSelectingImagesToRemove) {
             Text(text = "${removedImageIds.size} image(s) selected.", style = MaterialTheme.typography.bodySmall)
 
@@ -357,7 +354,6 @@ fun UpdateCampsiteScreen(
             }
         }
 
-        // Add images button
         Button(
             onClick = { imagePicker.launch("image/*") },
             enabled = !isSaving,
@@ -386,7 +382,6 @@ fun UpdateCampsiteScreen(
             Text(text = errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
 
-        // Save all campsite and image changes
         Button(
             onClick = {
                 if (location.isBlank()) {
@@ -395,30 +390,30 @@ fun UpdateCampsiteScreen(
                 }
 
                 val occupancy = occupancyText.toIntOrNull() ?: campsite.occupancy
-
                 if (occupancy < 0) {
                     errorMessage = "Please enter a valid occupancy."
                     return@Button
                 }
+
+                val lat = latText.toDoubleOrNull()
+                val lon = lonText.toDoubleOrNull()
+                val geoPoint = if (lat != null && lon != null) GeoPoint(lat, lon) else null
 
                 errorMessage = null
                 isSaving = true
 
                 coroutineScope.launch {
                     try {
-                        // Delete images that the owner marked for removal.
                         for (imageId in removedImageIds.toList()) {
                             imageDB.deleteImageAwait(imageId)
                         }
 
-                        // Upload newly selected images.
                         for (uri in selectedImageUris) {
                             val compressedBytes = withContext(Dispatchers.IO) {
                                 ImageUtils.compressImage(context, uri)
                             }
 
-                            val imageId =
-                                "campsite_${campsite.id}_${UUID.randomUUID()}"
+                            val imageId = "campsite_${campsite.id}_${UUID.randomUUID()}"
 
                             val newImage = Image(
                                 id = imageId,
@@ -431,16 +426,16 @@ fun UpdateCampsiteScreen(
                             imageDB.addImageAwait(newImage)
                         }
 
-                        // Update the campsite details
                         campsite.locationName = location.trim()
                         campsite.occupancy = occupancy
                         campsite.policy = description.trim()
+                        campsite.tags = tags.trim()
+                        campsite.location = geoPoint
 
                         onCampsiteUpdated(campsite)
 
                     } catch (exception: Exception) {
-                        errorMessage =
-                            "Unable to save changes: ${exception.message}"
+                        errorMessage = "Unable to save changes: ${exception.message}"
                     } finally {
                         isSaving = false
                     }
@@ -501,9 +496,6 @@ private fun UpdatePillTextField(
     )
 }
 
-/**
- * Waits for Firestore to finish adding an image.
- */
 private suspend fun ImageDB.addImageAwait(image: Image) {
     suspendCancellableCoroutine<Unit> { continuation ->
         addImage(
@@ -522,9 +514,6 @@ private suspend fun ImageDB.addImageAwait(image: Image) {
     }
 }
 
-/**
- * Waits for Firestore to finish deleting an image.
- */
 private suspend fun ImageDB.deleteImageAwait(imageId: String) {
     suspendCancellableCoroutine<Unit> { continuation ->
         deleteImage(
@@ -542,4 +531,3 @@ private suspend fun ImageDB.deleteImageAwait(imageId: String) {
         )
     }
 }
-
