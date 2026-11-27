@@ -29,8 +29,19 @@ class CampsiteDB {
      * @param campsite campsite to be added
      * @return Unit
      */
-    fun addCampsite(campsite: Campsite) {
-        campsitesRef.document(campsite.id).set(campsite)
+    fun addCampsite(
+        campsite: Campsite,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        campsitesRef.document(campsite.id)
+            .set(campsite)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
     }
 
     /**
