@@ -28,16 +28,21 @@ import com.example.code.components.CampsiteCard
 import com.example.code.data.SampleCampsites
 import com.example.code.ui.theme.PichusTheme
 import android.app.DatePickerDialog
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +51,8 @@ import com.example.code.Availability
 import com.example.code.Reservation
 import com.example.code.ui.theme.ButtonCream
 import com.example.code.ui.theme.DeepSage
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -54,7 +61,9 @@ import kotlin.math.roundToInt
 
 /**
  * Entrant home screen. Entrants can search campsites by keyword (US 01.01.01)
+ * filter by location, date, and number of guests (US 01.01.02),
  * and see the list of campsites (US 01.01.03)
+ * and scan a campsite's QR code to view its details (US 01.12.01)
  */
 
 @Composable
@@ -63,7 +72,10 @@ fun BrowseScreen(
     onCampsiteClick: (Campsite) -> Unit,
     modifier: Modifier = Modifier,
     availabilities: List<Availability> = emptyList(),
-    reservations: List<Reservation> = emptyList()
+    reservations: List<Reservation> = emptyList(),
+    onQrScanned: (String) -> Unit = {},
+    isAdmin: Boolean = false,
+    onMyCampsitesClick: () -> Unit = {}
 ) {
     // Remembers what user typed in search bar. If changes, screen redraws itself. Survives screen rotation (android rebuilding the screen - keeps value)
     // Learned from Android Developers, "Save UI state in Compose", https://developer.android.com/develop/ui/compose/state-saving
@@ -76,6 +88,11 @@ fun BrowseScreen(
     var selectedDateMillis by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val context = LocalContext.current
+    val scanLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
+        if (result.contents != null) {
+            onQrScanned(result.contents)
+        }
+    }
     val displayDateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     val hasActiveFilters = locationFilter.isNotBlank() || guestsFilter.isNotBlank() || selectedDateMillis != null
     val guestCount = guestsFilter.toIntOrNull()
@@ -104,7 +121,13 @@ fun BrowseScreen(
             campsite to score
         }
         .let { list ->
-            if (hasActiveFilters) list.sortedByDescending { it.second ?: 0 } else list
+            if (hasActiveFilters) {
+                // Hide campsites that match none of the filters (0%), then rank best match first
+                list.filter { (it.second ?: 0) > 0 }
+                    .sortedByDescending { it.second ?: 0 }
+            } else {
+                list
+            }
         }
 
     // Search bar on top, with the list of campsites below it
@@ -137,12 +160,32 @@ fun BrowseScreen(
                 modifier = Modifier.weight(1f)
             )
 
+            // QR scan button (US 01.12.01)
+            IconButton(onClick = {
+                val options = ScanOptions()
+                options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+                options.setPrompt("Point your camera at a campsite's QR code")
+                options.setBeepEnabled(false)
+                options.setOrientationLocked(false)
+                scanLauncher.launch(options)
+            }) {
+                Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan QR code")
+            }
+
             Spacer(Modifier.width(8.dp))
 
             FilledTonalButton(onClick = { showFilters = !showFilters },
                 border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Text(if (hasActiveFilters) "FILTER •" else "FILTER")
+            }
+        }
+
+        // Admin can switch between browsing campsites and managing their own campsites.
+        if (isAdmin) {
+            PrimaryTabRow(selectedTabIndex = 0) {
+                Tab(selected = true, onClick = {}, text = { Text("BROWSE") })
+                Tab(selected = false, onClick = onMyCampsitesClick, text = { Text("MY CAMPSITES") })
             }
         }
 
@@ -321,10 +364,10 @@ private fun calculateMatchScore(
     }
 
     if (guestCount != null && guestCount > 0) {
-        val guestScore = if (campsite.occupancy >= guestCount) {
-            100.0
-        } else {
-            ((campsite.occupancy.toDouble() / guestCount) * 70.0).coerceIn(0.0, 70.0)
+        val guestScore = when {
+            campsite.occupancy == guestCount -> 100.0
+            campsite.occupancy > guestCount -> (100.0 - (campsite.occupancy - guestCount) * 5.0).coerceAtLeast(75.0)
+            else -> ((campsite.occupancy.toDouble() / guestCount) * 70.0).coerceIn(0.0, 70.0)
         }
         scores.add(guestScore)
     }

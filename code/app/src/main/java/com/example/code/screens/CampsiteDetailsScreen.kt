@@ -99,19 +99,8 @@ fun CampsiteDetailsScreen(
 
         Spacer(Modifier.height(16.dp)) //extra space before button
 
-        if (isAdmin) {
-            // Only admins can remove campsites
-            Button(
-                onClick = { showDeleteConfirmation = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                )
-            ) {
-                Text("REMOVE CAMPSITE")
-            }
-        } else if (isWaitlistOpen) {
+        // Both Admins and Entrants can join or leave a waitlist
+        if (isWaitlistOpen) {
             if (isOnWaitingList) {
                 // shows joined if entrant is alr on the waiting list
                 Surface(
@@ -233,6 +222,21 @@ fun CampsiteDetailsScreen(
             }
             Spacer(Modifier.height(16.dp))
         }
+
+        // Only admins can remove campsites
+        if (isAdmin) {
+            Button(
+                onClick = { showDeleteConfirmation = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
+            ) {
+                Text("REMOVE CAMPSITE")
+            }
+        }
+
     }
 
     if (showDeleteConfirmation) {

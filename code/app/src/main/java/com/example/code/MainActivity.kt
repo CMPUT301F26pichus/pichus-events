@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import android.provider.Settings
+import android.widget.Toast
 import com.example.code.screens.BrowseScreen
 import com.example.code.screens.CampsiteDetailsScreen
 import com.example.code.screens.CreateLotteryScreen
@@ -39,6 +40,10 @@ import com.example.code.screens.ReservationsScreen
 import com.example.code.screens.WelcomeScreen
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Text
 
 
 /**
@@ -70,6 +75,9 @@ class MainActivity : ComponentActivity() {
 
                 // See which campsite is currently opened, null means we're still on browse screen (no campsite opened yet)
                 var selectedCampsite by remember { mutableStateOf<Campsite?>(null) }
+
+                // Tracks whether an Admin has selected the My Campsites section.
+                var isAdminViewingMyCampsites by rememberSaveable { mutableStateOf(false) }
 
                 // Controls whether the campsite registration form is open
                 var isRegisteringCampsite by rememberSaveable { mutableStateOf(false) }
@@ -107,7 +115,14 @@ class MainActivity : ComponentActivity() {
 
 
                 // Back button goes to previous page browse screen instead of closing the app
-                BackHandler(enabled = adminPage != null || selectedCampsite != null || isRegisteringCampsite || isUpdatingCampsite || isCreatingWaitlist) {
+                BackHandler(
+                    enabled = adminPage != null ||
+                            selectedCampsite != null ||
+                            isRegisteringCampsite ||
+                            isUpdatingCampsite ||
+                            isCreatingWaitlist ||
+                            (selectedTab == AppTab.SEARCH && isAdminViewingMyCampsites)
+                ) {
                     when {
                         adminPage != null -> {
                             adminPage = when (adminPage) {
@@ -116,22 +131,11 @@ class MainActivity : ComponentActivity() {
                                 null -> null
                             }
                         }
-
-                        isRegisteringCampsite -> {
-                            isRegisteringCampsite = false
-                        }
-
-                        isUpdatingCampsite -> {
-                            isUpdatingCampsite = false
-                        }
-
-                        isCreatingWaitlist -> {
-                            isCreatingWaitlist = false
-                        }
-
-                        selectedCampsite != null -> {
-                            selectedCampsite = null
-                        }
+                        isRegisteringCampsite -> { isRegisteringCampsite = false }
+                        isUpdatingCampsite -> { isUpdatingCampsite = false }
+                        isCreatingWaitlist -> { isCreatingWaitlist = false }
+                        selectedCampsite != null -> { selectedCampsite = null }
+                        isAdminViewingMyCampsites -> { isAdminViewingMyCampsites = false }
                     }
                 }
 
@@ -150,6 +154,7 @@ class MainActivity : ComponentActivity() {
                                     isUpdatingCampsite = false
                                     isCreatingWaitlist = false
                                     selectedCampsite = null
+                                    isAdminViewingMyCampsites = false
                                 }
                             )
                         }
@@ -179,6 +184,11 @@ class MainActivity : ComponentActivity() {
                         val currentUser = userDB.users.find { it.userID == UserSession.currentUserId }
                             ?: User(name = "Owner", userID = UserSession.currentUserId, role = "Campsite Owner")
 
+                        val isAdmin = currentUser.role.equals("Admin", ignoreCase = true)
+                        val isCampsiteOwner = currentUser.role.equals("Campsite Owner", ignoreCase = true)
+                        // An Admin can temporarily enter owner mode without changing their role
+                        val isOwnerMode = isCampsiteOwner || (isAdmin && isAdminViewingMyCampsites)
+
                         // US 02.05.01: while an owner is signed in, draw their lotteries once registration ends.
                         // The lottery draws from the pooled waiting lists of all its campsites (US 02.04.02).
                         LaunchedEffect(currentUser.userID) {
@@ -204,8 +214,17 @@ class MainActivity : ComponentActivity() {
                                         currentUserId = UserSession.currentUserId,
                                         imageDB = imageDB,
                                         onCampsiteRegistered = { newCampsite ->
-                                            campsiteDB.addCampsite(newCampsite)
-                                            isRegisteringCampsite = false
+                                            campsiteDB.addCampsite(
+                                                campsite = newCampsite,
+                                                onSuccess = { isRegisteringCampsite = false },
+                                                onFailure = { exception ->
+                                                    Toast.makeText(
+                                                        this@MainActivity,
+                                                        "Could not save campsite: ${exception.message}",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
+                                            )
                                         },
                                         onBack = { isRegisteringCampsite = false },
                                         modifier = Modifier.padding(innerPadding)
@@ -247,29 +266,64 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(innerPadding)
                                     )
                                 } else if (selectedCampsite == null) {
-                                    if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
-                                        OwnerHomeScreen(
-                                            campsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
-                                            onCampsiteClick = { selectedCampsite = it },
-                                            onRegisterClick = { isRegisteringCampsite = true },
-                                            onCreateLotteryClick = {
-                                                selectedCampsite = null
-                                                isCreatingWaitlist = true
-                                            },
-                                            modifier = Modifier.padding(innerPadding)
-                                        )
+                                    if (isOwnerMode) {
+                                        // Admins see tabs so they can switch between Browse and My Campsites.
+                                        if (isAdmin) {
+                                            Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+                                                PrimaryTabRow(selectedTabIndex = 1) {
+                                                    Tab(selected = false,
+                                                        onClick = { isAdminViewingMyCampsites = false },
+                                                        text = { Text("BROWSE") })
+                                                    Tab(selected = true,
+                                                        onClick = {},
+                                                        text = { Text("MY CAMPSITES") })
+                                                }
+                                                OwnerHomeScreen(
+                                                    campsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
+                                                    onCampsiteClick = { selectedCampsite = it },
+                                                    onRegisterClick = { isRegisteringCampsite = true },
+                                                    onCreateLotteryClick = {
+                                                        selectedCampsite = null
+                                                        isCreatingWaitlist = true
+                                                    },
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                            }
+                                        } else {
+                                            OwnerHomeScreen(
+                                                campsites = campsiteDB.campsites.filter { it.ownerID == currentUser.userID },
+                                                onCampsiteClick = { selectedCampsite = it },
+                                                onRegisterClick = { isRegisteringCampsite = true },
+                                                onCreateLotteryClick = {
+                                                    selectedCampsite = null
+                                                    isCreatingWaitlist = true
+                                                },
+                                                modifier = Modifier.padding(innerPadding)
+                                            )
+                                        }
                                     } else {
                                         BrowseScreen(
                                             campsites = campsiteDB.campsites,
                                             availabilities = availabilityDB.availabilities,
                                             reservations = reservationDB.reservations,
                                             onCampsiteClick = { selectedCampsite = it },
+                                            // US 01.12.01: the QR code holds the campsite ID, so open that campsite
+                                            onQrScanned = { scannedId ->
+                                                val scannedCampsite = campsiteDB.campsites.find { it.id == scannedId.trim() }
+                                                if (scannedCampsite != null) {
+                                                    selectedCampsite = scannedCampsite
+                                                } else {
+                                                    Toast.makeText(this@MainActivity, "No campsite found for this QR code", Toast.LENGTH_SHORT).show()
+                                                }
+                                            },
+                                            isAdmin = isAdmin,
+                                            onMyCampsitesClick = { isAdminViewingMyCampsites = true },
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
                                 } else {
                                     val campsite = selectedCampsite!!
-                                    if (currentUser.role.equals("Campsite Owner", ignoreCase = true)) {
+                                    if (isOwnerMode) {
                                         OwnerCampsiteDetailsScreen(
                                             campsite = campsite,
                                             imageDB = imageDB,
@@ -286,11 +340,11 @@ class MainActivity : ComponentActivity() {
                                         val isWaitlistOpen = waitlist != null
                                         val isOnWaitingList = waitlist?.contains(UserSession.currentUserId) == true
                                         CampsiteDetailsScreen(
-                                            campsite = selectedCampsite!!,
+                                            campsite = campsite,
                                             onBack = { selectedCampsite = null },
                                             isOnWaitingList = isOnWaitingList,
                                             imageDB = imageDB,
-                                            isWaitlistOpen=isWaitlistOpen,
+                                            isWaitlistOpen = isWaitlistOpen,
                                             onJoinLottery = {
                                                 waitingListDB.joinWaitingList(
                                                     campsite.id,
@@ -303,7 +357,7 @@ class MainActivity : ComponentActivity() {
                                                     UserSession.currentUserId
                                                 )
                                             },
-                                            isAdmin = currentUser.role.equals("Admin", ignoreCase = true),
+                                            isAdmin = isAdmin,
                                             onDeleteCampsite = {
                                                 imageDB.deleteCampsiteImages( // delete all images belonging to this campsite
                                                     campsiteId = campsite.id,
@@ -336,7 +390,7 @@ class MainActivity : ComponentActivity() {
                                             modifier = Modifier.padding(innerPadding)
                                         )
                                     }
-                                   }
+                                }
                             }
 
                             AppTab.RESERVATIONS -> {
@@ -456,6 +510,7 @@ class MainActivity : ComponentActivity() {
                                                     UserSession.currentUserId = -1
                                                     selectedTab = AppTab.SEARCH
                                                     selectedCampsite = null
+                                                    isAdminViewingMyCampsites = false
                                                     isRegisteringCampsite = false
                                                     adminPage = null
                                                     editingProfile = false
