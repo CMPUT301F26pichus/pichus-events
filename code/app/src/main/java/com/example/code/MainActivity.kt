@@ -386,6 +386,7 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 )
                                             },
+                                            onDeleteReview = { review -> reviewDB.deleteReview(review) },
                                             reviews = reviewDB.getCampsiteReviews(campsite),
                                             users = userDB.users,
                                             reservations = reservationDB.reservations.filter { it.campsiteID == campsite.id },
