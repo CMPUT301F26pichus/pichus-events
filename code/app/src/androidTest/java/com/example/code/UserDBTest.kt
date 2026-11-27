@@ -4,6 +4,7 @@
 package com.example.code
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.code.waitUntil
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -109,7 +110,7 @@ class UserDBTest {
     fun updateProfilePictureIDChangesPictureID() {
         val user = addTestUser()
         userDB.updateProfilePicture(user, "new_profile_picture")
-        Thread.sleep(2000)
+        waitUntil { findTestUser()?.profilePictureId == "new_profile_picture" }
         assertEquals("new_profile_picture", findTestUser()?.profilePictureId)
     }
 
@@ -117,7 +118,7 @@ class UserDBTest {
     fun updateDeviceIDChangesDeviceID() {
         val user = addTestUser()
         userDB.updateDeviceID(user, "6d155e2351ebaa76")
-        Thread.sleep(2000)
+        waitUntil { findTestUser()?.deviceID == "6d155e2351ebaa76" }
         assertEquals("6d155e2351ebaa76", findTestUser()?.deviceID)
     }
 
@@ -125,7 +126,7 @@ class UserDBTest {
     fun updateDeviceIDRemovesDeviceID() {
         val user = addTestUser()
         userDB.updateDeviceID(user, "")
-        Thread.sleep(2000)
+        waitUntil { findTestUser()?.deviceID == ""}
         assertEquals("", findTestUser()?.deviceID)
     }
 
@@ -133,7 +134,7 @@ class UserDBTest {
     fun updateNotificationPreferenceChangesPreference() {
         val user = addTestUser()
         userDB.updateNotificationsEnabled(user, false)
-        Thread.sleep(2000)
+        waitUntil { findTestUser()?.notificationsEnabled == false}
         assertEquals(false, findTestUser()?.notificationsEnabled)
     }
 

@@ -60,60 +60,67 @@ class CampsiteDBTest {
         assertTrue(campsiteDB.filterByOccupancy(50).any { it.name == campsite.name })
         assertFalse(campsiteDB.filterByOccupancy(60).any { it.name == campsite.name })
     }
-//
-//    @Test
-//    fun updateOccupancyUpdatesProperly() {
-//        campsiteDB.addCampsite(campsite)
-//        waitUntil { isInOwnCampsites() }
-//        campsiteDB.updateOccupancy("40", campsite)
-//        assertEquals(40, findTestCampsite()?.occupancy)
-//    }
-//
-//    @Test
-//    fun updateOccupancyRejectsInvalidValue() {
-//        campsiteDB.addCampsite(campsite)
-//        waitUntil { isInOwnCampsites() }
-//        campsiteDB.updateOccupancy("Forty", campsite)
-//        assertEquals(50, findTestCampsite()?.occupancy)
-//    }
-//
-//    @Test
-//    fun updatePriceUpdatesProperly() {
-//        campsiteDB.addCampsite(campsite)
-//        waitUntil { isInOwnCampsites() }
-//        campsiteDB.updatePrice("40.00", campsite)
-//        assertEquals(40.00, findTestCampsite()?.price)
-//    }
-//
-//    @Test
-//    fun updatePolicyUpdatesProperly() {
-//        campsiteDB.addCampsite(campsite)
-//        waitUntil { isInOwnCampsites() }
-//        campsiteDB.updatePolicy("This is a revised policy.", campsite)
-//        assertEquals("This is a revised policy.", findTestCampsite()?.policy)
-//    }
-//
-//    @Test
-//    fun updateDescriptionUpdatesProperly() {
-//        campsiteDB.addCampsite(campsite)
-//        waitUntil { isInOwnCampsites() }
-//        campsiteDB.updateDescription("This is a revised description.", campsite)
-//        assertEquals("This is a revised description.", findTestCampsite()?.description)
-//    }
-//
-//    @Test
-//    fun updateTagsUpdatesProperly() {
-//        campsiteDB.addCampsite(campsite)
-//        waitUntil { isInOwnCampsites() }
-////        campsiteDB.updateTags("#update", campsite)
-//        assertEquals("#update", findTestCampsite()?.tags)
-//    }
-//
+
+    @Test
+    fun updateOccupancyUpdatesProperly() {
+        campsiteDB.addCampsite(campsite)
+        waitUntil { isInOwnCampsites() }
+        campsiteDB.updateOccupancy("40", campsite)
+        Thread.sleep(3000)
+        assertEquals(40, findTestCampsite()?.occupancy)
+    }
+
+    @Test
+    fun updateOccupancyRejectsInvalidValue() {
+        campsiteDB.addCampsite(campsite)
+        waitUntil { isInOwnCampsites() }
+        campsiteDB.updateOccupancy("Forty", campsite)
+        Thread.sleep(3000)
+        assertEquals(50, findTestCampsite()?.occupancy)
+    }
+
+    @Test
+    fun updatePriceUpdatesProperly() {
+        campsiteDB.addCampsite(campsite)
+        waitUntil { isInOwnCampsites() }
+        campsiteDB.updatePrice("40.00", campsite)
+        Thread.sleep(3000)
+        assertEquals(40.00, findTestCampsite()?.price)
+    }
+
+    @Test
+    fun updatePolicyUpdatesProperly() {
+        campsiteDB.addCampsite(campsite)
+        waitUntil { isInOwnCampsites() }
+        campsiteDB.updatePolicy("This is a revised policy.", campsite)
+        Thread.sleep(3000)
+        assertEquals("This is a revised policy.", findTestCampsite()?.policy)
+    }
+
+    @Test
+    fun updateDescriptionUpdatesProperly() {
+        campsiteDB.addCampsite(campsite)
+        waitUntil { isInOwnCampsites() }
+        campsiteDB.updateDescription("This is a revised description.", campsite)
+        Thread.sleep(3000)
+        assertEquals("This is a revised description.", findTestCampsite()?.description)
+    }
+
+    @Test
+    fun updateTagsUpdatesProperly() {
+        campsiteDB.addCampsite(campsite)
+        waitUntil { isInOwnCampsites() }
+        campsiteDB.updateTags("#update", campsite)
+        Thread.sleep(3000)
+        assertEquals("#update", findTestCampsite()?.tags)
+    }
+
     @Test
     fun updateRatingsUpdatesProperly() {
         campsiteDB.addCampsite(campsite)
         waitUntil { isInOwnCampsites() }
         campsiteDB.updateRating(campsite.id, 4.5)
+        Thread.sleep(3000)
         assertEquals(4.5, findTestCampsite()?.rating)
     }
 }
