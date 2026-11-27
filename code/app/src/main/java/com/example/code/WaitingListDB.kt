@@ -148,7 +148,7 @@ class WaitingListDB {
 
     /**
      * Removes an entrant from every waiting list they joined.
-     * Part 4 cascade: call this when a user profile is deleted.
+     * Call this when a user profile is deleted.
      * Each list is updated in a transaction, so entrants joining at the same time are not lost.
      *
      * @param entrantID entrant being deleted

@@ -69,6 +69,9 @@ class MainActivity : ComponentActivity() {
                 val notificationService = remember { NotificationService(notificationDB, userDB) }
                 val lotteryService = remember { LotteryService(lotteryDB, reservationDB, notificationService) }
                 val messageDB = remember { MessageDB() }
+                val cascadeDelete = remember {
+                    CascadeDelete(userDB, campsiteDB, reservationDB, waitingListDB, lotteryDB, availabilityDB, imageDB)
+                }
                 //Track reservations
                 var selectedReservationId by remember { mutableStateOf<String?>(null) }
 
@@ -361,26 +364,13 @@ class MainActivity : ComponentActivity() {
                                             },
                                             isAdmin = isAdmin,
                                             onDeleteCampsite = {
-                                                imageDB.deleteCampsiteImages( // delete all images belonging to this campsite
-                                                    campsiteId = campsite.id,
-                                                    onSuccess = {
-                                                        campsiteDB.deleteCampsite(
-                                                            campsite = campsite,
-                                                            onSuccess = { selectedCampsite = null },
-                                                            onFailure = { exception ->
-                                                                android.util.Log.e(
-                                                                    "MainActivity",
-                                                                    "Failed to delete campsite",
-                                                                    exception
-                                                                )
-                                                            }
-                                                        )
-                                                    },
-
+                                                cascadeDelete.deleteCampsite(
+                                                    campsite = campsite,
+                                                    onSuccess = { selectedCampsite = null },
                                                     onFailure = { exception ->
                                                         android.util.Log.e(
                                                             "MainActivity",
-                                                            "Failed to delete campsite images",
+                                                            "Failed to delete campsite",
                                                             exception
                                                         )
                                                     }
@@ -497,6 +487,7 @@ class MainActivity : ComponentActivity() {
                                             EditProfileScreen(
                                                 user = currentUser,
                                                 userDB = userDB,
+                                                onDeleteAccount = { user -> cascadeDelete.deleteUser(user) },
                                                 onBack = { editingProfile = false },
                                                 onDeleted = {
                                                     editingProfile = false
@@ -545,7 +536,7 @@ class MainActivity : ComponentActivity() {
                                             users = userDB.users,
                                             imageDB = imageDB,
                                             onBack = { adminPage = AdminPage.MENU },
-                                            onDeleteUser = { user -> userDB.deleteUser(user) },
+                                            onDeleteUser = { user -> cascadeDelete.deleteUser(user) },
                                             onDeleteProfilePicture = { user ->
                                                 imageDB.deleteImage(
                                                     id = user.profilePictureId,

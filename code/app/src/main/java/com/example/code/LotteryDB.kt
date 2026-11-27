@@ -47,7 +47,7 @@ class LotteryDB {
 
     /**
      * Takes one campsite out of the lottery it is in and deletes that campsite's waiting list.
-     * Part 4 cascade: call this when a campsite is deleted.
+     * Call this when a campsite is deleted.
      * Entrants who also joined another campsite in the lottery stay in the draw.
      * A lottery left with no campsites is deleted.
      *
