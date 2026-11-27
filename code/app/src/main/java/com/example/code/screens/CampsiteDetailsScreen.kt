@@ -69,6 +69,7 @@ fun CampsiteDetailsScreen(
     isAdmin: Boolean = false,
     onDeleteCampsite: () -> Unit = {},
     onDeleteReview: (Review) -> Unit = {},
+    onDeleteRating: (Reservation) -> Unit = {},
     reviews: List<Review> = emptyList(),
     users: List<User> = emptyList(),
     reservations: List<Reservation> = emptyList()
@@ -195,7 +196,8 @@ fun CampsiteDetailsScreen(
 
                 var showReviewMenu by remember(reviewerID) { mutableStateOf(false) }
                 val reviewerName = users.find { it.userID == reviewerID }?.name?.ifBlank { null } ?: "Camper #$reviewerID"
-                val reviewerRating = reservations.find { it.customerID == reviewerID && it.rating > 0 }?.rating
+                val reviewerReservation = reservations.find { it.customerID == reviewerID && it.rating > 0 }
+                val reviewerRating = reviewerReservation?.rating
                 val reviewerReview = reviews.find { it.reviewerID == reviewerID }
 
                 Card(
@@ -220,7 +222,7 @@ fun CampsiteDetailsScreen(
 
                             // Only admins can delete reviews
                             // Only show the menu if a written review exists
-                            if (isAdmin && reviewerReview != null) {
+                            if (isAdmin && (reviewerReview != null || reviewerReservation != null)) {
                                 Box {
                                     IconButton(onClick = { showReviewMenu = true }) {
                                         Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Review options")
@@ -229,13 +231,24 @@ fun CampsiteDetailsScreen(
                                         expanded = showReviewMenu,
                                         onDismissRequest = { showReviewMenu = false }
                                     ) {
-                                        DropdownMenuItem(
-                                            text = { Text("Delete review") },
-                                            onClick = {
-                                                showReviewMenu = false
-                                                onDeleteReview(reviewerReview)
-                                            }
-                                        )
+                                        if (reviewerReview != null) {
+                                            DropdownMenuItem(
+                                                text = { Text("Delete review") },
+                                                onClick = {
+                                                    showReviewMenu = false
+                                                    onDeleteReview(reviewerReview)
+                                                }
+                                            )
+                                        }
+                                        if (reviewerReservation != null) {
+                                            DropdownMenuItem(
+                                                text = { Text("Delete rating") },
+                                                onClick = {
+                                                    showReviewMenu = false
+                                                    onDeleteRating(reviewerReservation)
+                                                }
+                                            )
+                                        }
                                     }
                                 }
                             }

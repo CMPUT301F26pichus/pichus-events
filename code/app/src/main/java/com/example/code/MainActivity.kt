@@ -327,7 +327,7 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                 } else {
-                                    val campsite = selectedCampsite!!
+                                    val campsite = campsiteDB.campsites.find { it.id == selectedCampsite!!.id } ?: selectedCampsite!!
                                     if (isOwnerMode) {
                                         OwnerCampsiteDetailsScreen(
                                             campsite = campsite,
@@ -377,6 +377,31 @@ class MainActivity : ComponentActivity() {
                                                 )
                                             },
                                             onDeleteReview = { review -> reviewDB.deleteReview(review) },
+                                            onDeleteRating = { reservation ->
+                                                reservationDB.deleteRatingAndCalculateAverage(
+                                                    reservation = reservation,
+                                                    onSuccess = { newAverage ->
+                                                        campsiteDB.updateRating(
+                                                            campsiteId = campsite.id,
+                                                            newRating = newAverage,
+                                                            onFailure = { exception ->
+                                                                Toast.makeText(
+                                                                    this@MainActivity,
+                                                                    "Rating was deleted, but the campsite average could not be updated: ${exception.message}",
+                                                                    Toast.LENGTH_LONG
+                                                                ).show()
+                                                            }
+                                                        )
+                                                    },
+                                                    onFailure = { exception ->
+                                                        Toast.makeText(
+                                                            this@MainActivity,
+                                                            "Could not delete rating: ${exception.message}",
+                                                            Toast.LENGTH_LONG
+                                                        ).show()
+                                                    }
+                                                )
+                                            },
                                             reviews = reviewDB.getCampsiteReviews(campsite),
                                             users = userDB.users,
                                             reservations = reservationDB.reservations.filter { it.campsiteID == campsite.id },
