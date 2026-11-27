@@ -38,6 +38,7 @@ import com.example.code.UserDB
 fun EditProfileScreen (
     user: User,
     userDB: UserDB, // to save changes in firstore
+    onDeleteAccount: (User) -> Unit, // deletes the profile and everything tied to it
     onBack: () -> Unit,
     onDeleted: () -> Unit,
     modifier: Modifier = Modifier
@@ -126,7 +127,7 @@ fun EditProfileScreen (
                 // red to match the DELETE ACCOUNT button
                 Button(
                     onClick = {
-                        userDB.deleteUser(user)
+                        onDeleteAccount(user)
                         showDeleteDialog = false
                         onDeleted()
                     },
