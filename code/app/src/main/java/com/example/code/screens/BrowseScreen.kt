@@ -41,6 +41,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Tab
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
@@ -71,7 +73,9 @@ fun BrowseScreen(
     modifier: Modifier = Modifier,
     availabilities: List<Availability> = emptyList(),
     reservations: List<Reservation> = emptyList(),
-    onQrScanned: (String) -> Unit = {}
+    onQrScanned: (String) -> Unit = {},
+    isAdmin: Boolean = false,
+    onMyCampsitesClick: () -> Unit = {}
 ) {
     // Remembers what user typed in search bar. If changes, screen redraws itself. Survives screen rotation (android rebuilding the screen - keeps value)
     // Learned from Android Developers, "Save UI state in Compose", https://developer.android.com/develop/ui/compose/state-saving
@@ -174,6 +178,14 @@ fun BrowseScreen(
                 border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Text(if (hasActiveFilters) "FILTER •" else "FILTER")
+            }
+        }
+
+        // Admin can switch between browsing campsites and managing their own campsites.
+        if (isAdmin) {
+            PrimaryTabRow(selectedTabIndex = 0) {
+                Tab(selected = true, onClick = {}, text = { Text("BROWSE") })
+                Tab(selected = false, onClick = onMyCampsitesClick, text = { Text("MY CAMPSITES") })
             }
         }
 
