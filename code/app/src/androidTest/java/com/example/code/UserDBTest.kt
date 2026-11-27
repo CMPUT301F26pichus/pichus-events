@@ -1,5 +1,6 @@
 // Instrumented tests for UserDB against Firestore. Run on the emulator.
 // Each test uses a unique email and deletes the user it made.
+
 package com.example.code
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
