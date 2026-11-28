@@ -1,6 +1,7 @@
 // Instrumented tests for ReservationDB against Firestore. Run on the emulator.
 // Uses fake customer and owner IDs. ReservationDB has no delete, so cleanup
 // removes the test document straight from Firestore.
+
 package com.example.code
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -22,6 +23,8 @@ class ReservationDBTest {
     private val entrant = User(name = "Test Entrant", userID = fakeID(), role = "Entrant")
     private val owner = User(name = "Test Owner", userID = fakeID(), role = "Campsite Owner")
     private val campsiteID = "TestSite_${System.currentTimeMillis()}"
+
+    private val testCampsite = Campsite(ownerID = owner.userID, name = "testSite")
     private val day = 24L * 60 * 60 * 1000
 
     private fun daysFromNow(days: Int) = Timestamp(Date(System.currentTimeMillis() + days * day))
@@ -37,6 +40,8 @@ class ReservationDBTest {
     fun cleanUp() {
         val docID = entrant.userID.toString() + "_" + campsiteID
         Tasks.await(Firebase.firestore.collection("reservations").document(docID).delete())
+        Firebase.firestore.collection("reservations")
+            .document(entrant.userID.toString() + "_" + testCampsite.id).delete() // removes reservation associated to test campsite
     }
 
     @Test
@@ -67,6 +72,63 @@ class ReservationDBTest {
         assertTrue(reservationDB.viewCancelledReservations(entrant).any(::isTest))
         assertTrue(reservationDB.viewCancelledReservations(owner).any(::isTest))
         assertFalse(reservationDB.viewActiveReservations(entrant).any(::isTest))
+    }
+
+    @Test
+    fun cancelAllCancelsAllUserReservations() {
+        val reservation = makeReservation(3, 7)
+        reservationDB.addReservation(reservation)
+
+        Thread.sleep(2000)
+        reservationDB.cancelAll(entrant)
+        Thread.sleep(2000)
+
+        assertFalse(reservationDB.viewPastReservations(entrant).any(::isTest))
+        assertFalse(reservationDB.viewActiveReservations(entrant).any(::isTest))
+        assertTrue(reservationDB.viewCancelledReservations(entrant).any(::isTest))
+
+        assertFalse(reservationDB.viewPastReservations(owner).any(::isTest))
+        assertFalse(reservationDB.viewActiveReservations(owner).any(::isTest))
+        assertTrue(reservationDB.viewCancelledReservations(owner).any(::isTest))
+    }
+
+    @Test
+    fun cancelAllCancelsAllOwnerReservations() {
+        val reservation = makeReservation(3, 7)
+        reservationDB.addReservation(reservation)
+
+        Thread.sleep(2000)
+        reservationDB.cancelAll(owner)
+        Thread.sleep(2000)
+
+        assertFalse(reservationDB.viewPastReservations(entrant).any(::isTest))
+        assertFalse(reservationDB.viewActiveReservations(entrant).any(::isTest))
+        assertTrue(reservationDB.viewCancelledReservations(entrant).any(::isTest))
+
+        assertFalse(reservationDB.viewPastReservations(owner).any(::isTest))
+        assertFalse(reservationDB.viewActiveReservations(owner).any(::isTest))
+        assertTrue(reservationDB.viewCancelledReservations(owner).any(::isTest))
+    }
+
+    @Test
+    fun cancelCampsiteReservationsCancelsAll() {
+        val reservation = Reservation(customerID = entrant.userID,
+            campsiteID = testCampsite.id, ownerID = owner.userID)
+
+
+        reservationDB.addReservation(reservation)
+        Thread.sleep(2000)
+        reservationDB.cancelCampsiteReservations(testCampsite)
+        Thread.sleep(2000)
+
+        assertTrue(reservationDB.viewPastReservations(entrant).isEmpty())
+        assertTrue(reservationDB.viewActiveReservations(entrant).isEmpty())
+        assertTrue(reservationDB.viewCancelledReservations(entrant).size == 1)
+
+        assertTrue(reservationDB.viewPastReservations(owner).isEmpty())
+        assertTrue(reservationDB.viewActiveReservations(owner).isEmpty())
+        assertTrue(reservationDB.viewCancelledReservations(owner).size == 1)
+
     }
 
     @Test
