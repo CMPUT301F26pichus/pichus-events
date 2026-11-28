@@ -1,5 +1,6 @@
 // Instrumented tests for CampsiteDB against Firestore. Run on the emulator.
 // Uses a fake owner ID and deletes every campsite it adds.
+
 package com.example.code
 
 import androidx.test.ext.junit.runners.AndroidJUnit4

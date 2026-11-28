@@ -59,7 +59,7 @@ class AvailabilityDBTest {
     }
 
     @Test
-    fun removeDateAddsIt() {
+    fun removeDateRemovesIt() {
         availabilityDB.addAvailability(availability)
         waitUntil { isInOwnAvailabilities() }
         val dateToRemove = Timestamp(Date(System.currentTimeMillis() + 2 * day))

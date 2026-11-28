@@ -1,4 +1,4 @@
-// Instrumented tests for UserDB against Firestore. Run on the emulator.
+// Instrumented tests for ReviewDB against Firestore. Run on the emulator.
 // Test reviews are deleted from the database.
 
 package com.example.code
