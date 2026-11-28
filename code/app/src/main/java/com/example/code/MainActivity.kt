@@ -99,7 +99,11 @@ class MainActivity : ComponentActivity() {
                 // True until user enters ID
                 var showWelcome by remember { mutableStateOf(true) }
 
-                // This phone's unique Android ID, used to remember who the user is
+                /* This phone's unique Android ID, used to remember who the user is.
+                   2026-11-18: Learned about it from a YouTube Tutorial from Burak Selcuk, titled,
+                   “Android Device ID in Kotlin Language”,
+                   https://www.youtube.com/watch?v=W5yYiZ45u9I
+                 */
                 val deviceID = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
                 // If this phone is already linked to a user, skip the welcome screen straight to homescreen
